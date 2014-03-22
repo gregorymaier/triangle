@@ -1,5 +1,5 @@
 /*
- * @(#)IdEntry.java                        2.1 2003/10/07
+ * @(#)LetCommand.java                        2.1 2003/10/07
  *
  * Copyright (C) 1999, 2003 D.A. Watt and D.F. Brown
  * Dept. of Computing Science, University of Glasgow, Glasgow G12 8QQ Scotland
@@ -12,22 +12,24 @@
  * of the authors.
  */
 
-package Triangle.ContextualAnalyzer;
+package Triangle.AbstractSyntaxTrees.Commands;
 
+import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.Declarations.Declaration;
+import Triangle.SyntacticAnalyzer.SourcePosition;
 
-public class IdEntry {
+public class LetCommand extends Command {
 
-  protected String id;
-  protected Declaration attr;
-  protected int level;
-  protected IdEntry previous;
-
-  IdEntry (String id, Declaration attr, int level, IdEntry previous) {
-    this.id = id;
-    this.attr = attr;
-    this.level = level;
-    this.previous = previous;
+  public LetCommand (Declaration dAST, Command cAST, SourcePosition thePosition) {
+    super (thePosition);
+    D = dAST;
+    C = cAST;
   }
 
+  public Object visit(Visitor v, Object o) {
+    return v.visitLetCommand(this, o);
+  }
+
+  public Declaration D;
+  public Command C;
 }

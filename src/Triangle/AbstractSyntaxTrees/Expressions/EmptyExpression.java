@@ -1,5 +1,5 @@
 /*
- * @(#)IdEntry.java                        2.1 2003/10/07
+ * @(#)EmptyExpression.java                        2.1 2003/10/07
  *
  * Copyright (C) 1999, 2003 D.A. Watt and D.F. Brown
  * Dept. of Computing Science, University of Glasgow, Glasgow G12 8QQ Scotland
@@ -12,22 +12,18 @@
  * of the authors.
  */
 
-package Triangle.ContextualAnalyzer;
+package Triangle.AbstractSyntaxTrees.Expressions;
 
-import Triangle.AbstractSyntaxTrees.Declarations.Declaration;
+import Triangle.AbstractSyntaxTrees.Visitor;
+import Triangle.SyntacticAnalyzer.SourcePosition;
 
-public class IdEntry {
+public class EmptyExpression extends Expression {
 
-  protected String id;
-  protected Declaration attr;
-  protected int level;
-  protected IdEntry previous;
-
-  IdEntry (String id, Declaration attr, int level, IdEntry previous) {
-    this.id = id;
-    this.attr = attr;
-    this.level = level;
-    this.previous = previous;
+  public EmptyExpression (SourcePosition thePosition) {
+    super (thePosition);
   }
 
+  public Object visit(Visitor v, Object o) {
+    return v.visitEmptyExpression(this, o);
+  }
 }

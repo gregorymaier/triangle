@@ -1,5 +1,5 @@
 /*
- * @(#)IdEntry.java                        2.1 2003/10/07
+ * @(#)ArrayAggregate.java                        2.1 2003/10/07
  *
  * Copyright (C) 1999, 2003 D.A. Watt and D.F. Brown
  * Dept. of Computing Science, University of Glasgow, Glasgow G12 8QQ Scotland
@@ -12,22 +12,17 @@
  * of the authors.
  */
 
-package Triangle.ContextualAnalyzer;
+package Triangle.AbstractSyntaxTrees.Aggregates;
 
-import Triangle.AbstractSyntaxTrees.Declarations.Declaration;
+import Triangle.AbstractSyntaxTrees.AST;
+import Triangle.SyntacticAnalyzer.SourcePosition;
 
-public class IdEntry {
+public abstract class ArrayAggregate extends AST {
 
-  protected String id;
-  protected Declaration attr;
-  protected int level;
-  protected IdEntry previous;
-
-  IdEntry (String id, Declaration attr, int level, IdEntry previous) {
-    this.id = id;
-    this.attr = attr;
-    this.level = level;
-    this.previous = previous;
+  public ArrayAggregate (SourcePosition thePosition) {
+    super (thePosition);
+    elemCount = 0;
   }
 
+  public int elemCount;
 }

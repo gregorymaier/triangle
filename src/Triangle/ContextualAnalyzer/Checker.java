@@ -16,83 +16,124 @@ package Triangle.ContextualAnalyzer;
 
 import Triangle.ErrorReporter;
 import Triangle.StdEnvironment;
-import Triangle.AbstractSyntaxTrees.AnyTypeDenoter;
-import Triangle.AbstractSyntaxTrees.ArrayExpression;
-import Triangle.AbstractSyntaxTrees.ArrayTypeDenoter;
-import Triangle.AbstractSyntaxTrees.AssignCommand;
-import Triangle.AbstractSyntaxTrees.BinaryExpression;
-import Triangle.AbstractSyntaxTrees.BinaryOperatorDeclaration;
-import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
-import Triangle.AbstractSyntaxTrees.CallCommand;
-import Triangle.AbstractSyntaxTrees.CallExpression;
-import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
-import Triangle.AbstractSyntaxTrees.CharacterExpression;
-import Triangle.AbstractSyntaxTrees.CharacterLiteral;
-import Triangle.AbstractSyntaxTrees.ConstActualParameter;
-import Triangle.AbstractSyntaxTrees.ConstDeclaration;
-import Triangle.AbstractSyntaxTrees.ConstFormalParameter;
-import Triangle.AbstractSyntaxTrees.Declaration;
-import Triangle.AbstractSyntaxTrees.DotVname;
-import Triangle.AbstractSyntaxTrees.EmptyActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.EmptyCommand;
-import Triangle.AbstractSyntaxTrees.EmptyExpression;
-import Triangle.AbstractSyntaxTrees.EmptyFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.ErrorTypeDenoter;
-import Triangle.AbstractSyntaxTrees.FieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.FormalParameter;
-import Triangle.AbstractSyntaxTrees.FormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.FuncActualParameter;
-import Triangle.AbstractSyntaxTrees.FuncDeclaration;
-import Triangle.AbstractSyntaxTrees.FuncFormalParameter;
-import Triangle.AbstractSyntaxTrees.Identifier;
-import Triangle.AbstractSyntaxTrees.IfCommand;
-import Triangle.AbstractSyntaxTrees.IfExpression;
-import Triangle.AbstractSyntaxTrees.IntTypeDenoter;
-import Triangle.AbstractSyntaxTrees.IntegerExpression;
-import Triangle.AbstractSyntaxTrees.IntegerLiteral;
-import Triangle.AbstractSyntaxTrees.LetCommand;
-import Triangle.AbstractSyntaxTrees.LetExpression;
-import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
-import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.MultipleFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.MultipleRecordAggregate;
-import Triangle.AbstractSyntaxTrees.Operator;
-import Triangle.AbstractSyntaxTrees.ProcActualParameter;
-import Triangle.AbstractSyntaxTrees.ProcDeclaration;
-import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
 import Triangle.AbstractSyntaxTrees.Program;
-import Triangle.AbstractSyntaxTrees.RecordExpression;
-import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SequentialCommand;
-import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
-import Triangle.AbstractSyntaxTrees.SimpleTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SimpleVname;
-import Triangle.AbstractSyntaxTrees.SingleActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.SingleArrayAggregate;
-import Triangle.AbstractSyntaxTrees.SingleFieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SingleFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.SingleRecordAggregate;
-import Triangle.AbstractSyntaxTrees.SubscriptVname;
-import Triangle.AbstractSyntaxTrees.Terminal;
-import Triangle.AbstractSyntaxTrees.TypeDeclaration;
-import Triangle.AbstractSyntaxTrees.TypeDenoter;
-import Triangle.AbstractSyntaxTrees.UnaryExpression;
-import Triangle.AbstractSyntaxTrees.UnaryOperatorDeclaration;
-import Triangle.AbstractSyntaxTrees.VarActualParameter;
-import Triangle.AbstractSyntaxTrees.VarDeclaration;
-import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
-import Triangle.AbstractSyntaxTrees.VnameExpression;
-import Triangle.AbstractSyntaxTrees.WhileCommand;
+import Triangle.AbstractSyntaxTrees.Aggregates.MultipleArrayAggregate;
+import Triangle.AbstractSyntaxTrees.Aggregates.MultipleRecordAggregate;
+import Triangle.AbstractSyntaxTrees.Aggregates.SingleArrayAggregate;
+import Triangle.AbstractSyntaxTrees.Aggregates.SingleRecordAggregate;
+import Triangle.AbstractSyntaxTrees.Commands.AssignCommand;
+import Triangle.AbstractSyntaxTrees.Commands.CallCommand;
+import Triangle.AbstractSyntaxTrees.Commands.EmptyCommand;
+import Triangle.AbstractSyntaxTrees.Commands.IfCommand;
+import Triangle.AbstractSyntaxTrees.Commands.LetCommand;
+import Triangle.AbstractSyntaxTrees.Commands.SequentialCommand;
+import Triangle.AbstractSyntaxTrees.Commands.WhileCommand;
+import Triangle.AbstractSyntaxTrees.Declarations.BinaryOperatorDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.ClassDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.ConstDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.Declaration;
+import Triangle.AbstractSyntaxTrees.Declarations.FuncDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.ProcDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.SequentialClassDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.SequentialDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.TypeDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.UnaryOperatorDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.Expressions.ArrayExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.BinaryExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.CallExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.CharacterExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.EmptyExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.IfExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.IntegerExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.LetExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.RecordExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.UnaryExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.VnameExpression;
+import Triangle.AbstractSyntaxTrees.Parameters.ConstActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.ConstFormalParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.EmptyActualParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.EmptyFormalParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.FormalParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.FormalParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.FuncActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.FuncFormalParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.MultipleActualParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.MultipleFormalParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.ProcActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.ProcFormalParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.SingleActualParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.SingleFormalParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.VarActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.VarFormalParameter;
+import Triangle.AbstractSyntaxTrees.Terminals.CharacterLiteral;
+import Triangle.AbstractSyntaxTrees.Terminals.ClassIdentifier;
+import Triangle.AbstractSyntaxTrees.Terminals.Identifier;
+import Triangle.AbstractSyntaxTrees.Terminals.IntegerLiteral;
+import Triangle.AbstractSyntaxTrees.Terminals.Operator;
+import Triangle.AbstractSyntaxTrees.Terminals.Terminal;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.AnyTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.ArrayTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.BoolTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.CharTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.ErrorTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.FieldTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.IntTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.MultipleFieldTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.SimpleTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.SingleFieldTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
+import Triangle.AbstractSyntaxTrees.Vname.DotVname;
+import Triangle.AbstractSyntaxTrees.Vname.SimpleVname;
+import Triangle.AbstractSyntaxTrees.Vname.SubscriptVname;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public final class Checker implements Visitor {
-
+	
+	/**
+	 * Class Declarations
+	 */
+	
+	@Override
+	public Object visitClassIdentifier(ClassIdentifier ast, Object o) {
+		if(!classIdTables.addNewClass(ast.spelling))
+			reporter.reportError("Duplicate class", ast.spelling, ast.position);
+		
+		reporter.setActiveClassName(ast.spelling);
+		
+		return classIdTables.getIdTableForClass(ast.spelling);
+	}
+	
+	@Override
+	public Object visitClassDeclaration(ClassDeclaration ast, Object o) {
+		// Set specific scope for this class
+		// Now when any declaration is processed it will be entered into
+		// the class scope rather than the general scope
+		this._classIdTable = (IdentificationTable) ast.CI.visit(this, o);
+		
+		// Process all class declarations
+		ast.D.visit(this, o);
+		
+		/**
+		 * VERY IMPORTANT TO SET BACK TO null
+		 */
+		this._classIdTable = null;
+		return null;
+	}
+	
+	@Override
+	public Object visitSequentialClassDeclaration(SequentialClassDeclaration ast,
+			Object o) {
+		ast.C1.visit(this, o);
+		ast.C2.visit(this, o);
+		return null;
+	}
+	
   // Commands
-
   // Always returns null. Does not use the given object.
-
+	
   public Object visitAssignCommand(AssignCommand ast, Object o) {
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
@@ -133,10 +174,10 @@ public final class Checker implements Visitor {
   }
 
   public Object visitLetCommand(LetCommand ast, Object o) {
-    idTable.openScope();
+    getActiveIdTable().openScope();
     ast.D.visit(this, null);
     ast.C.visit(this, null);
-    idTable.closeScope();
+    getActiveIdTable().closeScope();
     return null;
   }
 
@@ -242,10 +283,10 @@ public final class Checker implements Visitor {
   }
 
   public Object visitLetExpression(LetExpression ast, Object o) {
-    idTable.openScope();
+    getActiveIdTable().openScope();
     ast.D.visit(this, null);
     ast.type = (TypeDenoter) ast.E.visit(this, null);
-    idTable.closeScope();
+    getActiveIdTable().closeScope();
     return ast.type;
   }
 
@@ -289,7 +330,7 @@ public final class Checker implements Visitor {
 
   public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-    idTable.enter(ast.I.spelling, ast);
+    getActiveIdTable().enter(ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
@@ -298,14 +339,14 @@ public final class Checker implements Visitor {
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter (ast.I.spelling, ast); // permits recursion
+    getActiveIdTable().enter (ast.I.spelling, ast); // permits recursion
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
-    idTable.openScope();
+    getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-    idTable.closeScope();
+    getActiveIdTable().closeScope();
     if (! ast.T.equals(eType))
       reporter.reportError ("body of function \"%\" has wrong type",
                             ast.I.spelling, ast.E.position);
@@ -313,14 +354,14 @@ public final class Checker implements Visitor {
   }
 
   public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
-    idTable.enter (ast.I.spelling, ast); // permits recursion
+    getActiveIdTable().enter (ast.I.spelling, ast); // permits recursion
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
-    idTable.openScope();
+    getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
     ast.C.visit(this, null);
-    idTable.closeScope();
+    getActiveIdTable().closeScope();
     return null;
   }
 
@@ -332,7 +373,7 @@ public final class Checker implements Visitor {
 
   public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter (ast.I.spelling, ast);
+    getActiveIdTable().enter (ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
@@ -345,7 +386,7 @@ public final class Checker implements Visitor {
 
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter (ast.I.spelling, ast);
+    getActiveIdTable().enter (ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
@@ -401,7 +442,7 @@ public final class Checker implements Visitor {
 
   public Object visitConstFormalParameter(ConstFormalParameter ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter(ast.I.spelling, ast);
+    getActiveIdTable().enter(ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("duplicated formal parameter \"%\"",
                             ast.I.spelling, ast.position);
@@ -409,11 +450,11 @@ public final class Checker implements Visitor {
   }
 
   public Object visitFuncFormalParameter(FuncFormalParameter ast, Object o) {
-    idTable.openScope();
+    getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
-    idTable.closeScope();
+    getActiveIdTable().closeScope();
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter (ast.I.spelling, ast);
+    getActiveIdTable().enter (ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("duplicated formal parameter \"%\"",
                             ast.I.spelling, ast.position);
@@ -421,10 +462,10 @@ public final class Checker implements Visitor {
   }
 
   public Object visitProcFormalParameter(ProcFormalParameter ast, Object o) {
-    idTable.openScope();
+    getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
-    idTable.closeScope();
-    idTable.enter (ast.I.spelling, ast);
+    getActiveIdTable().closeScope();
+    getActiveIdTable().enter (ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("duplicated formal parameter \"%\"",
                             ast.I.spelling, ast.position);
@@ -433,7 +474,7 @@ public final class Checker implements Visitor {
 
   public Object visitVarFormalParameter(VarFormalParameter ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter (ast.I.spelling, ast);
+    getActiveIdTable().enter (ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("duplicated formal parameter \"%\"",
                             ast.I.spelling, ast.position);
@@ -642,7 +683,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitIdentifier(Identifier I, Object o) {
-    Declaration binding = idTable.retrieve(I.spelling);
+    Declaration binding = getActiveIdTable().retrieve(I.spelling);
     if (binding != null)
       I.decl = binding;
     return binding;
@@ -653,7 +694,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitOperator(Operator O, Object o) {
-    Declaration binding = idTable.retrieve(O.spelling);
+    Declaration binding = getActiveIdTable().retrieve(O.spelling);
     if (binding != null)
       O.decl = binding;
     return binding;
@@ -761,11 +802,17 @@ public final class Checker implements Visitor {
 
   public Checker (ErrorReporter reporter) {
     this.reporter = reporter;
-    this.idTable = new IdentificationTable ();
+    this._generalIdTable = new IdentificationTable ();
+    this.classIdTables = new ClassIdentificationTables();
     establishStdEnvironment();
   }
 
-  private IdentificationTable idTable;
+  private IdentificationTable _generalIdTable;
+  private IdentificationTable _classIdTable;
+  private ClassIdentificationTables classIdTables;
+  private IdentificationTable getActiveIdTable() {
+	  return _classIdTable == null ? _generalIdTable : _classIdTable;
+  }
   private static SourcePosition dummyPos = new SourcePosition();
   private ErrorReporter reporter;
 
@@ -805,7 +852,7 @@ public final class Checker implements Visitor {
     TypeDeclaration binding;
 
     binding = new TypeDeclaration(new Identifier(id, dummyPos), typedenoter, dummyPos);
-    idTable.enter(id, binding);
+    getActiveIdTable().enter(id, binding);
     return binding;
   }
 
@@ -821,7 +868,7 @@ public final class Checker implements Visitor {
     constExpr = new IntegerExpression(null, dummyPos);
     constExpr.type = constType;
     binding = new ConstDeclaration(new Identifier(id, dummyPos), constExpr, dummyPos);
-    idTable.enter(id, binding);
+    getActiveIdTable().enter(id, binding);
     return binding;
   }
 
@@ -834,7 +881,7 @@ public final class Checker implements Visitor {
 
     binding = new ProcDeclaration(new Identifier(id, dummyPos), fps,
                                   new EmptyCommand(dummyPos), dummyPos);
-    idTable.enter(id, binding);
+    getActiveIdTable().enter(id, binding);
     return binding;
   }
 
@@ -848,7 +895,7 @@ public final class Checker implements Visitor {
 
     binding = new FuncDeclaration(new Identifier(id, dummyPos), fps, resultType,
                                   new EmptyExpression(dummyPos), dummyPos);
-    idTable.enter(id, binding);
+    getActiveIdTable().enter(id, binding);
     return binding;
   }
 
@@ -863,7 +910,7 @@ public final class Checker implements Visitor {
 
     binding = new UnaryOperatorDeclaration (new Operator(op, dummyPos),
                                             argType, resultType, dummyPos);
-    idTable.enter(op, binding);
+    getActiveIdTable().enter(op, binding);
     return binding;
   }
 
@@ -878,7 +925,7 @@ public final class Checker implements Visitor {
 
     binding = new BinaryOperatorDeclaration (new Operator(op, dummyPos),
                                              arg1Type, arg2type, resultType, dummyPos);
-    idTable.enter(op, binding);
+    getActiveIdTable().enter(op, binding);
     return binding;
   }
 
@@ -891,7 +938,7 @@ public final class Checker implements Visitor {
 
   private void establishStdEnvironment () {
 
-    // idTable.startIdentification();
+    // getActiveIdTable().startIdentification();
     StdEnvironment.booleanType = new BoolTypeDenoter(dummyPos);
     StdEnvironment.integerType = new IntTypeDenoter(dummyPos);
     StdEnvironment.charType = new CharTypeDenoter(dummyPos);

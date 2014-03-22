@@ -15,78 +15,79 @@
 package Triangle.SyntacticAnalyzer;
 
 import Triangle.ErrorReporter;
-import Triangle.AbstractSyntaxTrees.ActualParameter;
-import Triangle.AbstractSyntaxTrees.ActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.ArrayAggregate;
-import Triangle.AbstractSyntaxTrees.ArrayExpression;
-import Triangle.AbstractSyntaxTrees.ArrayTypeDenoter;
-import Triangle.AbstractSyntaxTrees.AssignCommand;
-import Triangle.AbstractSyntaxTrees.BinaryExpression;
-import Triangle.AbstractSyntaxTrees.CallCommand;
-import Triangle.AbstractSyntaxTrees.CallExpression;
-import Triangle.AbstractSyntaxTrees.CharacterExpression;
-import Triangle.AbstractSyntaxTrees.CharacterLiteral;
-import Triangle.AbstractSyntaxTrees.ClassDeclaration;
 import Triangle.AbstractSyntaxTrees.Classes;
-import Triangle.AbstractSyntaxTrees.Command;
-import Triangle.AbstractSyntaxTrees.ConstActualParameter;
-import Triangle.AbstractSyntaxTrees.ConstDeclaration;
-import Triangle.AbstractSyntaxTrees.ConstFormalParameter;
-import Triangle.AbstractSyntaxTrees.Declaration;
-import Triangle.AbstractSyntaxTrees.DotVname;
-import Triangle.AbstractSyntaxTrees.EmptyActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.EmptyCommand;
-import Triangle.AbstractSyntaxTrees.EmptyFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.Expression;
-import Triangle.AbstractSyntaxTrees.FieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.FormalParameter;
-import Triangle.AbstractSyntaxTrees.FormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.FuncActualParameter;
-import Triangle.AbstractSyntaxTrees.FuncDeclaration;
-import Triangle.AbstractSyntaxTrees.FuncFormalParameter;
-import Triangle.AbstractSyntaxTrees.Identifier;
-import Triangle.AbstractSyntaxTrees.IfCommand;
-import Triangle.AbstractSyntaxTrees.IfExpression;
-import Triangle.AbstractSyntaxTrees.IntegerExpression;
-import Triangle.AbstractSyntaxTrees.IntegerLiteral;
-import Triangle.AbstractSyntaxTrees.LetCommand;
-import Triangle.AbstractSyntaxTrees.LetExpression;
-import Triangle.AbstractSyntaxTrees.MethodCallCommand;
-import Triangle.AbstractSyntaxTrees.MethodCallExpression;
-import Triangle.AbstractSyntaxTrees.MethodCallVname;
-import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
-import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.MultipleFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.MultipleRecordAggregate;
-import Triangle.AbstractSyntaxTrees.Operator;
-import Triangle.AbstractSyntaxTrees.ProcActualParameter;
-import Triangle.AbstractSyntaxTrees.ProcDeclaration;
-import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
 import Triangle.AbstractSyntaxTrees.Program;
-import Triangle.AbstractSyntaxTrees.RecordAggregate;
-import Triangle.AbstractSyntaxTrees.RecordExpression;
-import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SequentialClassDeclaration;
-import Triangle.AbstractSyntaxTrees.SequentialCommand;
-import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
-import Triangle.AbstractSyntaxTrees.SimpleTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SimpleVname;
-import Triangle.AbstractSyntaxTrees.SingleActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.SingleArrayAggregate;
-import Triangle.AbstractSyntaxTrees.SingleFieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SingleFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.SingleRecordAggregate;
-import Triangle.AbstractSyntaxTrees.SubscriptVname;
-import Triangle.AbstractSyntaxTrees.TypeDeclaration;
-import Triangle.AbstractSyntaxTrees.TypeDenoter;
-import Triangle.AbstractSyntaxTrees.UnaryExpression;
-import Triangle.AbstractSyntaxTrees.VarActualParameter;
-import Triangle.AbstractSyntaxTrees.VarDeclaration;
-import Triangle.AbstractSyntaxTrees.VarFormalParameter;
-import Triangle.AbstractSyntaxTrees.Vname;
-import Triangle.AbstractSyntaxTrees.VnameExpression;
-import Triangle.AbstractSyntaxTrees.WhileCommand;
+import Triangle.AbstractSyntaxTrees.Aggregates.ArrayAggregate;
+import Triangle.AbstractSyntaxTrees.Aggregates.MultipleArrayAggregate;
+import Triangle.AbstractSyntaxTrees.Aggregates.MultipleRecordAggregate;
+import Triangle.AbstractSyntaxTrees.Aggregates.RecordAggregate;
+import Triangle.AbstractSyntaxTrees.Aggregates.SingleArrayAggregate;
+import Triangle.AbstractSyntaxTrees.Aggregates.SingleRecordAggregate;
+import Triangle.AbstractSyntaxTrees.Commands.AssignCommand;
+import Triangle.AbstractSyntaxTrees.Commands.CallCommand;
+import Triangle.AbstractSyntaxTrees.Commands.Command;
+import Triangle.AbstractSyntaxTrees.Commands.EmptyCommand;
+import Triangle.AbstractSyntaxTrees.Commands.IfCommand;
+import Triangle.AbstractSyntaxTrees.Commands.LetCommand;
+import Triangle.AbstractSyntaxTrees.Commands.MethodCallCommand;
+import Triangle.AbstractSyntaxTrees.Commands.SequentialCommand;
+import Triangle.AbstractSyntaxTrees.Commands.WhileCommand;
+import Triangle.AbstractSyntaxTrees.Declarations.ClassDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.ConstDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.Declaration;
+import Triangle.AbstractSyntaxTrees.Declarations.FuncDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.ProcDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.SequentialClassDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.SequentialDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.TypeDeclaration;
+import Triangle.AbstractSyntaxTrees.Declarations.VarDeclaration;
+import Triangle.AbstractSyntaxTrees.Expressions.ArrayExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.BinaryExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.CallExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.CharacterExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.Expression;
+import Triangle.AbstractSyntaxTrees.Expressions.IfExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.IntegerExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.LetExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.MethodCallExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.RecordExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.UnaryExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.VnameExpression;
+import Triangle.AbstractSyntaxTrees.Parameters.ActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.ActualParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.ConstActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.ConstFormalParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.EmptyActualParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.EmptyFormalParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.FormalParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.FormalParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.FuncActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.FuncFormalParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.MultipleActualParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.MultipleFormalParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.ProcActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.ProcFormalParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.SingleActualParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.SingleFormalParameterSequence;
+import Triangle.AbstractSyntaxTrees.Parameters.VarActualParameter;
+import Triangle.AbstractSyntaxTrees.Parameters.VarFormalParameter;
+import Triangle.AbstractSyntaxTrees.Terminals.CharacterLiteral;
+import Triangle.AbstractSyntaxTrees.Terminals.ClassIdentifier;
+import Triangle.AbstractSyntaxTrees.Terminals.Identifier;
+import Triangle.AbstractSyntaxTrees.Terminals.IntegerLiteral;
+import Triangle.AbstractSyntaxTrees.Terminals.Operator;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.ArrayTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.FieldTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.MultipleFieldTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.SimpleTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.SingleFieldTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
+import Triangle.AbstractSyntaxTrees.Vname.DotVname;
+import Triangle.AbstractSyntaxTrees.Vname.MethodCallVname;
+import Triangle.AbstractSyntaxTrees.Vname.SimpleVname;
+import Triangle.AbstractSyntaxTrees.Vname.SubscriptVname;
+import Triangle.AbstractSyntaxTrees.Vname.Vname;
 
 public class Parser {
 
@@ -206,14 +207,14 @@ public class Parser {
 	  SourcePosition commandPos = new SourcePosition();
 	  start(commandPos);
 	  
-	  Identifier I = parseIdentifier();
+	  ClassIdentifier CI = parseClassIdentifier();
 	  accept(Token.IS); // ~
 	  
 	  Declaration D = parseDeclaration();
 	  accept(Token.END); // end
 	  
 	  finish(commandPos);
-	  return new ClassDeclaration(I, D, commandPos);
+	  return new ClassDeclaration(CI, D, commandPos);
   }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -274,6 +275,21 @@ public class Parser {
       syntacticError("identifier expected here", "");
     }
     return I;
+  }
+  
+  ClassIdentifier parseClassIdentifier() throws SyntaxError {
+	  ClassIdentifier I = null;
+
+	    if (currentToken.kind == Token.IDENTIFIER) {
+	      previousTokenPosition = currentToken.position;
+	      String spelling = currentToken.spelling;
+	      I = new ClassIdentifier(spelling, previousTokenPosition);
+	      currentToken = lexicalAnalyser.scan();
+	    } else {
+	      I = null;
+	      syntacticError("class identifier expected here", "");
+	    }
+	    return I;
   }
 
 // parseOperator parses an operator, and constructs a leaf AST to

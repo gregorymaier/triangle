@@ -19,13 +19,19 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
 public class ErrorReporter {
 
   int numErrors;
+  
+  String activeClassName;
 
   ErrorReporter() {
     numErrors = 0;
+    activeClassName = null;
   }
 
   public void reportError(String message, String tokenName, SourcePosition pos) {
-    System.out.print ("ERROR: ");
+	  if(null == activeClassName)
+		  System.out.print ("ERROR: ");
+	  else
+		  System.out.print("ERROR in " + activeClassName + " definition:");
 
     for (int p = 0; p < message.length(); p++)
     if (message.charAt(p) == '%')
@@ -38,5 +44,13 @@ public class ErrorReporter {
 
   public void reportRestriction(String message) {
     System.out.println("RESTRICTION: " + message);
+  }
+  
+  public void setActiveClassName(String className) {
+	  activeClassName = className;
+  }
+  
+  public void unsetActiveClassName() {
+	  activeClassName = null;
   }
 }

@@ -14,6 +14,7 @@
 
 package Triangle.AbstractSyntaxTrees;
 
+import Triangle.AbstractSyntaxTrees.Commands.Command;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class Program extends AST {
