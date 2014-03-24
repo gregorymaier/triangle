@@ -35,6 +35,7 @@ import Triangle.AbstractSyntaxTrees.Commands.CallCommand;
 import Triangle.AbstractSyntaxTrees.Commands.EmptyCommand;
 import Triangle.AbstractSyntaxTrees.Commands.IfCommand;
 import Triangle.AbstractSyntaxTrees.Commands.LetCommand;
+import Triangle.AbstractSyntaxTrees.Commands.MethodCallCommand;
 import Triangle.AbstractSyntaxTrees.Commands.SequentialCommand;
 import Triangle.AbstractSyntaxTrees.Commands.WhileCommand;
 import Triangle.AbstractSyntaxTrees.Declarations.BinaryOperatorDeclaration;
@@ -56,6 +57,7 @@ import Triangle.AbstractSyntaxTrees.Expressions.EmptyExpression;
 import Triangle.AbstractSyntaxTrees.Expressions.IfExpression;
 import Triangle.AbstractSyntaxTrees.Expressions.IntegerExpression;
 import Triangle.AbstractSyntaxTrees.Expressions.LetExpression;
+import Triangle.AbstractSyntaxTrees.Expressions.MethodCallExpression;
 import Triangle.AbstractSyntaxTrees.Expressions.RecordExpression;
 import Triangle.AbstractSyntaxTrees.Expressions.UnaryExpression;
 import Triangle.AbstractSyntaxTrees.Expressions.VnameExpression;
@@ -82,6 +84,7 @@ import Triangle.AbstractSyntaxTrees.TypeDenoters.AnyTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.ArrayTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.CharTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.ClassTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.ErrorTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.IntTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.MultipleFieldTypeDenoter;
@@ -89,6 +92,7 @@ import Triangle.AbstractSyntaxTrees.TypeDenoters.RecordTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.SimpleTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.SingleFieldTypeDenoter;
 import Triangle.AbstractSyntaxTrees.Vname.DotVname;
+import Triangle.AbstractSyntaxTrees.Vname.MethodCallVname;
 import Triangle.AbstractSyntaxTrees.Vname.SimpleVname;
 import Triangle.AbstractSyntaxTrees.Vname.SubscriptVname;
 import Triangle.AbstractSyntaxTrees.Vname.Vname;
@@ -1014,6 +1018,30 @@ public Object visitClassIdentifier(ClassIdentifier ast, Object o) {
 @Override
 public Object visitSequentialClassDeclaration(SequentialClassDeclaration ast,
 		Object o) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public Object visitMethodCallCommand(MethodCallCommand ast, Object o) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public Object visitMethodCallVname(MethodCallVname ast, Object o) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
 	// TODO Auto-generated method stub
 	return null;
 }

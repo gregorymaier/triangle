@@ -13,8 +13,7 @@ public class MethodCallExpression extends Expression {
 
 	@Override
 	public Object visit(Visitor v, Object o) {
-		// TODO Auto-generated method stub
-		return null;
+		return v.visitMethodCallExpression(this, o);
 	}
 
 	public MethodCallVname M;

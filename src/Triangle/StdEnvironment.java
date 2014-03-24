@@ -14,6 +14,11 @@
 
 package Triangle;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import Triangle.AbstractSyntaxTrees.Declarations.BinaryOperatorDeclaration;
 import Triangle.AbstractSyntaxTrees.Declarations.ConstDeclaration;
 import Triangle.AbstractSyntaxTrees.Declarations.FuncDeclaration;
@@ -31,6 +36,11 @@ public final class StdEnvironment {
 
   public static TypeDeclaration
     booleanDecl, charDecl, integerDecl;
+  
+  public static List<TypeDeclaration> classDeclarations =
+  											 new ArrayList<TypeDeclaration>();
+  
+  public static Map<String, TypeDenoter> classTypeDenoters = new TreeMap<String, TypeDenoter>();
 
   // These are small ASTs representing "declarations" of standard entities.
 

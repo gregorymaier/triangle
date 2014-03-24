@@ -24,6 +24,7 @@ public class ErrorTypeDenoter extends TypeDenoter {
   }
 
   public Object visit (Visitor v, Object o) {
+	  System.out.println("Visit ErrorTypeDenoter");
     return v.visitErrorTypeDenoter(this, o);
   }
 

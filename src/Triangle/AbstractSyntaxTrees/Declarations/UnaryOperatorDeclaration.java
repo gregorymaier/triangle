@@ -14,6 +14,7 @@
 
 package Triangle.AbstractSyntaxTrees.Declarations;
 
+import Triangle.StdEnvironment;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.Terminals.Operator;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
@@ -35,4 +36,9 @@ public class UnaryOperatorDeclaration extends Declaration {
 
   public Operator O;
   public TypeDenoter ARG, RES;
+  
+  @Override
+  public TypeDenoter declarationType() {
+    return StdEnvironment.errorType;
+  }
 }

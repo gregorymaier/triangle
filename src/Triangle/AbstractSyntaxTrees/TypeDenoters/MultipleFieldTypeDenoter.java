@@ -29,6 +29,7 @@ public class MultipleFieldTypeDenoter extends FieldTypeDenoter {
   }
 
   public Object visit (Visitor v, Object o) {
+	  System.out.println("Visit MultipleFieldTypeDenoter");
     return v.visitMultipleFieldTypeDenoter(this, o);
   }
 

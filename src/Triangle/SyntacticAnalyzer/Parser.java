@@ -35,6 +35,7 @@ import Triangle.AbstractSyntaxTrees.Commands.WhileCommand;
 import Triangle.AbstractSyntaxTrees.Declarations.ClassDeclaration;
 import Triangle.AbstractSyntaxTrees.Declarations.ConstDeclaration;
 import Triangle.AbstractSyntaxTrees.Declarations.Declaration;
+import Triangle.AbstractSyntaxTrees.Declarations.EmptyClassDeclaration;
 import Triangle.AbstractSyntaxTrees.Declarations.FuncDeclaration;
 import Triangle.AbstractSyntaxTrees.Declarations.ProcDeclaration;
 import Triangle.AbstractSyntaxTrees.Declarations.SequentialClassDeclaration;
@@ -159,6 +160,7 @@ public class Parser {
     try {
       // clAST will be null if no classes are defined
       Classes clAST = parseClasses();
+      // ./.println("DONE PARSING CLASSES");
       Command cAST = parseCommand();
       programAST = new Program(clAST, cAST, previousTokenPosition);
       if (currentToken.kind != Token.EOT) {
@@ -190,13 +192,20 @@ public class Parser {
 		  acceptIt();
 		  
 		  classesAST = parseSingleClass();
-		  while(currentToken.kind == Token.CLASS)
+		  // System.out.println("CLASS FOUND**********");
+		  while(currentToken.kind == Token.SEMICOLON)
 		  {
 			  acceptIt();
+			  accept(Token.CLASS);
 			  Classes c2AST = parseSingleClass();
+			  
 			  finish(commandPos);
-			  c2AST = new SequentialClassDeclaration(classesAST, c2AST, commandPos);
+			  classesAST = new SequentialClassDeclaration(classesAST, c2AST, commandPos);
+			  //	  System.out.println("CLASS FOUND**********");
 		  }
+	  }
+	  else {
+		  classesAST = new EmptyClassDeclaration(commandPos);
 	  }
 	  return classesAST;
   }
@@ -828,6 +837,7 @@ public class Parser {
     return formalsAST;
   }
 
+  // Syntax forces this not to be a method call
   FormalParameter parseFormalParameter() throws SyntaxError {
     FormalParameter formalAST = null; // in case there's a syntactic error;
 
@@ -929,6 +939,7 @@ public class Parser {
     return actualsAST;
   }
 
+  // TODO: don't need to mess with formalparameter just actual
   ActualParameter parseActualParameter() throws SyntaxError {
     ActualParameter actualAST = null; // in case there's a syntactic error
 
@@ -948,9 +959,14 @@ public class Parser {
     case Token.LBRACKET:
     case Token.LCURLY:
       {
+    	  //TODO: this will end up as the methodcallvname
         Expression eAST = parseExpression();
         finish(actualPos);
+  	  //System.out.println("~~~~~~~~PARSER~~~~~~~~~~~~~~~~~VISITCONSTACTUALPARAMETER~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
         actualAST = new ConstActualParameter(eAST, actualPos);
+        // System.out.println("~~~~~~~~~PARSER~~~~~~~~~~~~~~~~VISITCONSTACTUALPARAMETER~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
       }
       break;
 

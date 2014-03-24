@@ -14,12 +14,17 @@
 
 package Triangle.ContextualAnalyzer;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import Triangle.AbstractSyntaxTrees.Declarations.Declaration;
 
 public final class IdentificationTable {
 
+	private int numItems = 0;
   private int level;
   private IdEntry latest;
+  private Map<String, IdEntry> level0Declarations = new TreeMap<String, IdEntry>();
 
   public IdentificationTable () {
     level = 0;
@@ -48,6 +53,8 @@ public final class IdentificationTable {
       entry = local.previous;
     }
     this.level--;
+    
+   // System.out.println("LASTEST CHANGED (void closeScope())*****************************************************");
     this.latest = entry;
   }
 
@@ -58,6 +65,7 @@ public final class IdentificationTable {
 
   public void enter (String id, Declaration attr) {
 
+	  numItems++;
     IdEntry entry = this.latest;
     boolean present = false, searching = true;
 
@@ -75,6 +83,11 @@ public final class IdentificationTable {
     attr.duplicated = present;
     // Add new entry ...
     entry = new IdEntry(id, attr, this.level, this.latest);
+    
+    if(entry.level == 0)
+    	level0Declarations.put(entry.id, entry);
+    
+   // System.out.println("LASTEST CHANGED (void enter)*****************************************************");
     this.latest = entry;
   }
 
@@ -85,24 +98,43 @@ public final class IdentificationTable {
   // otherwise returns the attribute field of the entry found.
 
   public Declaration retrieve (String id) {
-
+	  //if(this.latest != null)
+		//  System.out.println("latest:" + latest.id);
+	  
+   //   System.out.println("retrieve:" + id);
+	//  System.out.println("numItems -> " + numItems);
+	//  if(this.latest != null)
+	//	  System.out.println(this.latest.id);
     IdEntry entry;
     Declaration attr = null;
     boolean present = false, searching = true;
 
     entry = this.latest;
+    int count = 0;
     while (searching) {
-      if (entry == null)
+    //	System.out.println(count++);
+      if (entry == null) {
+    	//  System.out.println("retrieve -> null");
         searching = false;
+      }
       else if (entry.id.equals(id)) {
+    	 // System.out.println(id);
         present = true;
         searching = false;
         attr = entry.attr;
-      } else
+      } else {
+    	//  if(entry != null)
+    	//	  System.out.println(entry.id);
         entry = entry.previous;
+      }
     }
 
     return attr;
+  }
+  
+  public IdEntry retrieveClassMember(String memberName) {
+	  //System.out.println("TRYING TO RETRIEVE CLASS MEMBER:" + memberName);
+	  return level0Declarations.get(memberName);
   }
 
 }

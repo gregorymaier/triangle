@@ -12,12 +12,13 @@ public class MethodCallVname extends Vname {
 		V = vAST;
 		I = iAST;
 		A = apsAST;
+		  //System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~MethodCallVname~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
 	}
 
 	@Override
 	public Object visit(Visitor v, Object o) {
-		// TODO Auto-generated method stub
-		return null;
+		return v.visitMethodCallVname(this, o);
 	}
 
 	public Vname V;

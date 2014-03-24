@@ -14,10 +14,12 @@
 
 package Triangle.AbstractSyntaxTrees.Declarations;
 
+import Triangle.StdEnvironment;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.Commands.Command;
 import Triangle.AbstractSyntaxTrees.Parameters.FormalParameterSequence;
 import Triangle.AbstractSyntaxTrees.Terminals.Identifier;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class ProcDeclaration extends Declaration {
@@ -37,4 +39,9 @@ public class ProcDeclaration extends Declaration {
   public Identifier I;
   public FormalParameterSequence FPS;
   public Command C;
+  
+  @Override
+  public TypeDenoter declarationType() {
+    return StdEnvironment.errorType;
+  }
 }

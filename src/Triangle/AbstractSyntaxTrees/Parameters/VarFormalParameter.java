@@ -42,4 +42,9 @@ public class VarFormalParameter extends FormalParameter {
   	} else
   	  return false;
   }
+
+  @Override
+  public TypeDenoter declarationType() {
+    return T;
+  }
 }

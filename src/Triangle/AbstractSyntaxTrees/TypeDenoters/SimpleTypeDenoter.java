@@ -26,6 +26,7 @@ public class SimpleTypeDenoter extends TypeDenoter {
   }
 
   public Object visit (Visitor v, Object o) {
+	//  System.out.println("Visit SimpleTypeDenoter");
     return v.visitSimpleTypeDenoter(this, o);
   }
 

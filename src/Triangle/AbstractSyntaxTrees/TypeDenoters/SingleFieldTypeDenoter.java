@@ -28,6 +28,7 @@ public class SingleFieldTypeDenoter extends FieldTypeDenoter {
   }
 
   public Object visit (Visitor v, Object o) {
+	  System.out.println("Visit SingleFieldTypeDenoter");
     return v.visitSingleFieldTypeDenoter(this, o);
   }
 

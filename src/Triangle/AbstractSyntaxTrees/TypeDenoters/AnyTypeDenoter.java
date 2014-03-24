@@ -24,6 +24,7 @@ public class AnyTypeDenoter extends TypeDenoter {
   }
 
   public Object visit(Visitor v, Object o) {
+	  System.out.println("Visit AnyTypeDenoter");
     return v.visitAnyTypeDenoter(this, o);
   }
 

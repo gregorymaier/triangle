@@ -17,6 +17,7 @@ package Triangle.AbstractSyntaxTrees.Declarations;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.Expressions.Expression;
 import Triangle.AbstractSyntaxTrees.Terminals.Identifier;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class ConstDeclaration extends Declaration {
@@ -34,4 +35,9 @@ public class ConstDeclaration extends Declaration {
 
   public Identifier I;
   public Expression E;
+  
+  @Override
+  public TypeDenoter declarationType() {
+    return E.type;
+  }
 }

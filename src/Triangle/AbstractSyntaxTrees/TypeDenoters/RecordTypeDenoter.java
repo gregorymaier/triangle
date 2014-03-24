@@ -25,6 +25,7 @@ public class RecordTypeDenoter extends TypeDenoter {
   }
 
   public Object visit (Visitor v, Object o) {
+	  System.out.println("Visit RecordTypeDenoter");
     return v.visitRecordTypeDenoter(this, o);
   }
 

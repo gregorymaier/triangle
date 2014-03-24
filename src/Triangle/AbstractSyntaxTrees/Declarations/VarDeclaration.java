@@ -29,9 +29,15 @@ public class VarDeclaration extends Declaration {
   }
 
   public Object visit(Visitor v, Object o) {
+	//  System.out.println("visiting var declaration");
     return v.visitVarDeclaration(this, o);
   }
 
   public Identifier I;
   public TypeDenoter T;
+  
+  @Override
+  public TypeDenoter declarationType() {
+    return T;
+  }
 }

@@ -44,4 +44,10 @@ public class FuncFormalParameter extends FormalParameter {
   public Identifier I;
   public FormalParameterSequence FPS;
   public TypeDenoter T;
+  
+  
+  @Override
+  public TypeDenoter declarationType() {
+    return T;
+  }
 }

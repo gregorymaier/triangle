@@ -24,6 +24,7 @@ public class BoolTypeDenoter extends TypeDenoter {
   }
 
   public Object visit(Visitor v, Object o) {
+	 // System.out.println("Visit BoolTypeDenoter");
     return v.visitBoolTypeDenoter(this, o);
   }
 

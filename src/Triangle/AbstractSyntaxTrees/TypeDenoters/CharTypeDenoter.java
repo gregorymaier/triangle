@@ -24,6 +24,7 @@ public class CharTypeDenoter extends TypeDenoter {
   }
 
   public Object visit(Visitor v, Object o) {
+	  System.out.println("Visit CharTypeDenoter");
     return v.visitCharTypeDenoter(this, o);
   }
 

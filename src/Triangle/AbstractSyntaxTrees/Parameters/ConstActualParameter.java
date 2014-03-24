@@ -16,13 +16,19 @@ package Triangle.AbstractSyntaxTrees.Parameters;
 
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.Expressions.Expression;
+import Triangle.AbstractSyntaxTrees.Expressions.MethodCallExpression;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class ConstActualParameter extends ActualParameter {
 
   public ConstActualParameter (Expression eAST, SourcePosition thePosition) {
     super (thePosition);
+  //  if(eAST == null)
+  //	  System.out.println("~~~~~~~eAST is null~~~~~~~~~~~~~~~~~~CONSTACTUALPARAMETER~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
     E = eAST;
+  //  if(E instanceof MethodCallExpression)
+ //   	System.out.println("MethodCallExpression     ^^^^^^^^^^^^^^^^^^^^^^^^    MethodCallExpression");
   }
 
   public Object visit(Visitor v, Object o) {

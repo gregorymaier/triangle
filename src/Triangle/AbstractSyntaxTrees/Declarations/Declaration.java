@@ -15,6 +15,7 @@
 package Triangle.AbstractSyntaxTrees.Declarations;
 
 import Triangle.AbstractSyntaxTrees.AST;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public abstract class Declaration extends AST {
@@ -23,6 +24,8 @@ public abstract class Declaration extends AST {
     super (thePosition);
     duplicated = false;
   }
+  
+  public abstract TypeDenoter declarationType();
 
   public boolean duplicated;
 }

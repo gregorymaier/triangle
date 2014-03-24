@@ -20,6 +20,10 @@ public class ErrorReporter {
 
   int numErrors;
   
+  public boolean errorFound() {
+	  return numErrors > 0;
+  }
+  
   String activeClassName;
 
   ErrorReporter() {

@@ -28,6 +28,7 @@ public class ArrayTypeDenoter extends TypeDenoter {
   }
 
   public Object visit(Visitor v, Object o) {
+	  System.out.println("Visit ArrayTypeDenoter");
     return v.visitArrayTypeDenoter(this, o);
   }
 

@@ -14,6 +14,7 @@
 
 package Triangle.AbstractSyntaxTrees.Declarations;
 
+import Triangle.StdEnvironment;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.Terminals.Identifier;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
@@ -34,4 +35,9 @@ public class TypeDeclaration extends Declaration {
 
   public Identifier I;
   public TypeDenoter T;
+  
+  @Override
+  public TypeDenoter declarationType() {
+	  return StdEnvironment.errorType;
+  }
 }

@@ -24,6 +24,7 @@ public class IntTypeDenoter extends TypeDenoter {
   }
 
   public Object visit (Visitor v, Object o) {
+	//  System.out.println("Visit IntTypeDenoter");
     return v.visitIntTypeDenoter(this, o);
   }
 

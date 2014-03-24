@@ -41,4 +41,9 @@ public class FuncDeclaration extends Declaration {
   public FormalParameterSequence FPS;
   public TypeDenoter T;
   public Expression E;
+  
+  @Override
+  public TypeDenoter declarationType() {
+    return T;
+  }
 }

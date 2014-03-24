@@ -14,8 +14,10 @@
 
 package Triangle.AbstractSyntaxTrees.Parameters;
 
+import Triangle.StdEnvironment;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.Terminals.Identifier;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class ProcFormalParameter extends FormalParameter {
@@ -40,5 +42,10 @@ public class ProcFormalParameter extends FormalParameter {
   	  return FPS.equals(pfpAST.FPS);
   	} else
   	  return false;
+  }
+  
+  @Override
+  public TypeDenoter declarationType() {
+    return StdEnvironment.errorType;
   }
 }

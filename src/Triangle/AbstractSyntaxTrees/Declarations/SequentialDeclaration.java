@@ -14,7 +14,9 @@
 
 package Triangle.AbstractSyntaxTrees.Declarations;
 
+import Triangle.StdEnvironment;
 import Triangle.AbstractSyntaxTrees.Visitor;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.TypeDenoter;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class SequentialDeclaration extends Declaration {
@@ -31,4 +33,9 @@ public class SequentialDeclaration extends Declaration {
   }
 
   public Declaration D1, D2;
+  
+  @Override
+  public TypeDenoter declarationType() {
+    return StdEnvironment.errorType;
+  }
 }
