@@ -12,8 +12,6 @@ public class MethodCallVname extends Vname {
 		V = vAST;
 		I = iAST;
 		A = apsAST;
-		  //System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~MethodCallVname~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
 	}
 
 	@Override

@@ -110,8 +110,14 @@ public final class Checker implements Visitor {
 	 */
 	@Override
 	public Object visitClassIdentifier(ClassIdentifier ast, Object o) {
-		if(!classIdTables.addNewClass(ast.spelling)) {
-			reporter.reportError("Duplicate class", ast.spelling, ast.position);
+		if(!classIdTables.addNewClass(ast.spelling) || ast.spelling.equals("Integer")
+				|| ast.spelling.equals("Boolean") || ast.spelling.equals("Char")) {
+			
+			if(!(ast.spelling.equals("Integer") || ast.spelling.equals("Boolean") || ast.spelling.equals("Char")))
+				reporter.reportError("Duplicate class", ast.spelling, ast.position);
+			else
+				reporter.reportError("Can't redefine \"%\"", ast.spelling, ast.position);
+			
 			return null;
 		}
 		
@@ -142,9 +148,7 @@ public final class Checker implements Visitor {
 			this._classIdTable = t;
 		
 			// Process all class declarations
-			//System.out.println("==============================================");
 			ast.D.visit(this, o);
-			//System.out.println("==============================================");
 			/**
 			 * VERY IMPORTANT TO SET BACK TO null
 			 */
@@ -158,10 +162,8 @@ public final class Checker implements Visitor {
 	@Override
 	public Object visitSequentialClassDeclaration(SequentialClassDeclaration ast,
 			Object o) {
-		//System.out.println("^^^^^^^^^^^^^^VISITING SEQUENTIAL^^^^^^^^^^^^^^^^^^^");
 		ast.C1.visit(this, o);
 		if(!reporter.errorFound()) {
-			//System.out.println("&&&&&&&&&&&&VISITING SEQUENTIAL&&&&&&&&&&&&&&&&&");
 			ast.C2.visit(this, o);
 		}
 		return null;
@@ -174,35 +176,29 @@ public final class Checker implements Visitor {
 	// THIS HAS TO BE A PROC
 	@Override
 	public Object visitMethodCallCommand(MethodCallCommand ast, Object o) {
-		//System.out.println("###################METHOD CALL####################");
 		ast.M.visit(this, o);
 		if(ast.M.type != StdEnvironment.errorType)
 			reporter.reportError("\"%\" is not a proc", ast.M.I.spelling, ast.M.I.position);
-		//System.out.println("###################END####################");
 		return null;
 	}
 	
 	// THIS HAS TO BE A FUNC
 		@Override
 		public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
-			//System.out.println("UUUUUUUUMethod call expressionUUUUUUUUUUUU");
 			ast.type = (TypeDenoter) ast.M.visit(this, o);
 			if(ast.M.type == StdEnvironment.errorType)
 				reporter.reportError("\"%\" is not a func", ast.M.I.spelling, ast.M.I.position);
-			//System.out.println("UUUUUUUUUU_______END____UUUUUUUUUUUU");
 			return ast.type;
 		}
 	
 	// WE NEED TO KNOW IF THIS IS A PROC OR FUNCTION
 	@Override
 	public Object visitMethodCallVname(MethodCallVname ast, Object o) {
-		//System.out.println("___________________visitMethodCallVname________________________");
 		ast.type = StdEnvironment.errorType;
 		ast.V.visit(this, o);
 		if(!(ast.V.type instanceof ClassTypeDenoter)) {
 			reporter.reportError("\"%\" is not a method", ast.I.spelling, ast.V.position);
 		} else {
-			//System.out.println("___________________found class now looking for member:" + ast.I.spelling + "________________________");
 			String className = ((ClassTypeDenoter) ast.V.type).ClassName;
 		  	IdentificationTable classTable = this.classIdTables.getIdTableForClass(className);
 		  	IdEntry entry = classTable.retrieveClassMember(ast.I.spelling);
@@ -211,31 +207,15 @@ public final class Checker implements Visitor {
 		  		ast.type = entry.attr.declarationType();
 		  		
 		  		if(entry.attr instanceof FuncDeclaration) {
-			  		//System.out.println("entry instance of FuncDeclaration");
 			  		ast.A.visit(this, ((FuncDeclaration)entry.attr).FPS);
 			  	}else if(entry.attr instanceof ProcDeclaration) {
-			  		//System.out.println("entry instance of ProcDeclaration");
 			  		ast.A.visit(this, ((ProcDeclaration)entry.attr).FPS);
 			  	}
-		  		//System.out.println("LOOK HERE ***");
-		  		//System.out.println(ast.I.spelling);
-		  		//System.out.println("LOOK HERE ***");
-		  		/**
-		  		 * TODO: Now need to checkout parameters
-		  		 */
-		  		
-		  		//	System.out.println("ast.A.visit(this, o);");
-		  		//ast.A.visit(this, o);
-		  		//	System.out.println("ast.A.visit(this, o); END END END");
-		  		/**
-		  		 * 
-		  		 */
 		  		
 		  	} else {
 		  		reporter.reportError("\"%\" is not a member of a class", ast.I.spelling, ast.I.position);
 		  	}
 		}
-		//System.out.println("___________________visitMethodCallVname END________________________");
 		return ast.type;
 	}
 	
@@ -243,18 +223,14 @@ public final class Checker implements Visitor {
   // Always returns null. Does not use the given object.
 	
   public Object visitAssignCommand(AssignCommand ast, Object o) {
-	  //System.out.println("$$$$$$ := $$$$$$$$$$");
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     if (!ast.V.variable) {
       reporter.reportError ("LHS of assignment is not a variable", "", ast.V.position);
-      //System.out.println("$$$$$$ ERROR FOUND $$$$$$$$$$");
     }
     if (! eType.equals(vType)) {
       reporter.reportError ("assignment incompatibilty", "", ast.position);
-      //System.out.println("$$$$$$ ERROR FOUND $$$$$$$$$$");
     }
-    //System.out.println("$$$$$$ := $$$$$$$$$$");
     return null;
   }
 
@@ -291,7 +267,6 @@ public final class Checker implements Visitor {
     getActiveIdTable().openScope();
     ast.D.visit(this, null);
     ast.C.visit(this, null);
-    //System.out.println("visitLetCommand ******CLOSING SCOPE******");
     getActiveIdTable().closeScope();
     return null;
   }
@@ -316,7 +291,6 @@ public final class Checker implements Visitor {
   // not use the given object.
 
   public Object visitArrayExpression(ArrayExpression ast, Object o) {
-	  //System.out.println("visitArrayExp");
     TypeDenoter elemType = (TypeDenoter) ast.AA.visit(this, null);
     IntegerLiteral il = new IntegerLiteral(new Integer(ast.AA.elemCount).toString(),
                                            ast.position);
@@ -325,7 +299,6 @@ public final class Checker implements Visitor {
   }
 
   public Object visitBinaryExpression(BinaryExpression ast, Object o) {
-	  //System.out.println("visitBinaryExp");
     TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
     TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, null);
     Declaration binding = (Declaration) ast.O.visit(this, null);
@@ -354,7 +327,6 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCallExpression(CallExpression ast, Object o) {
-	  //System.out.println("visitCallExp");
     Declaration binding = (Declaration) ast.I.visit(this, null);
     if (binding == null) {
       reportUndeclared(ast.I);
@@ -372,19 +344,16 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCharacterExpression(CharacterExpression ast, Object o) {
-	  // System.out.println("visitCharExp");
     ast.type = StdEnvironment.charType;
     return ast.type;
   }
 
   public Object visitEmptyExpression(EmptyExpression ast, Object o) {
-	  //  System.out.println("visitEmptyExp");
     ast.type = null;
     return ast.type;
   }
 
   public Object visitIfExpression(IfExpression ast, Object o) {
-	  //  System.out.println("visitIfExp");
     TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
     if (! e1Type.equals(StdEnvironment.booleanType))
       reporter.reportError ("Boolean expression expected here", "",
@@ -398,30 +367,25 @@ public final class Checker implements Visitor {
   }
 
   public Object visitIntegerExpression(IntegerExpression ast, Object o) {
-	  //  System.out.println("visitIntExp");
     ast.type = StdEnvironment.integerType;
     return ast.type;
   }
 
   public Object visitLetExpression(LetExpression ast, Object o) {
-	  //  System.out.println("visitLetExp");
     getActiveIdTable().openScope();
     ast.D.visit(this, null);
     ast.type = (TypeDenoter) ast.E.visit(this, null);
-    // System.out.println("visitLetExpression ******CLOSING SCOPE******");
     getActiveIdTable().closeScope();
     return ast.type;
   }
 
   public Object visitRecordExpression(RecordExpression ast, Object o) {
-	  //  System.out.println("visitRecordExp");
     FieldTypeDenoter rType = (FieldTypeDenoter) ast.RA.visit(this, null);
     ast.type = new RecordTypeDenoter(rType, ast.position);
     return ast.type;
   }
 
   public Object visitUnaryExpression(UnaryExpression ast, Object o) {
-	  //  System.out.println("visitUnaryExp");
 
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     Declaration binding = (Declaration) ast.O.visit(this, null);
@@ -442,7 +406,6 @@ public final class Checker implements Visitor {
   }
 
   public Object visitVnameExpression(VnameExpression ast, Object o) {
-	  //	  System.out.println("visitVnameExp");
     ast.type = (TypeDenoter) ast.V.visit(this, null);
     return ast.type;
   }
@@ -472,7 +435,6 @@ public final class Checker implements Visitor {
     getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-    //System.out.println("visitFuncDeclaration ******CLOSING SCOPE******");
     getActiveIdTable().closeScope();
     if (! ast.T.equals(eType))
       reporter.reportError ("body of function \"%\" has wrong type",
@@ -488,7 +450,6 @@ public final class Checker implements Visitor {
     getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
     ast.C.visit(this, null);
-    // System.out.println("visitProcDeclaration ******CLOSING SCOPE******");
     getActiveIdTable().closeScope();
     return null;
   }
@@ -513,12 +474,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {
-	  //System.out.println("visitVarDeclaration()");
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    // if(ast.T instanceof ClassTypeDenoter)
-    // 	System.out.println("TypeDenoter-> ClassTypeDenoter");
-    // else
-    // 	System.out.println("var is not a class");
     getActiveIdTable().enter (ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
@@ -585,7 +541,6 @@ public final class Checker implements Visitor {
   public Object visitFuncFormalParameter(FuncFormalParameter ast, Object o) {
     getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
-    //System.out.println("visitFuncFormalParameter ******CLOSING SCOPE******");
     getActiveIdTable().closeScope();
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     getActiveIdTable().enter (ast.I.spelling, ast);
@@ -598,7 +553,6 @@ public final class Checker implements Visitor {
   public Object visitProcFormalParameter(ProcFormalParameter ast, Object o) {
     getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
-    // System.out.println("visitProcFormalParamDeclaration ******CLOSING SCOPE******");
     getActiveIdTable().closeScope();
     getActiveIdTable().enter (ast.I.spelling, ast);
     if (ast.duplicated)
@@ -636,18 +590,8 @@ public final class Checker implements Visitor {
   // Always returns null. Uses the given FormalParameter.
 
   public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
-	  // System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~VISITCONSTACTUALPARAMETER~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     FormalParameter fp = (FormalParameter) o;
-    // System.out.println("Visiting ast.E");
-    // if(ast.E == null) System.out.println("ast.E is NULL NULL NULL");
-    // if(ast.E instanceof MethodCallExpression) System.out.println("ast.E is instanceof MethodCallExpression");
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-    // System.out.println("Visiting ast.E DONE DONE DONE");
-    
-    // if(eType == null) System.out.println("eType is NULL!!!!!!!!!!!!!!");
-    // if(fp == null) System.out.println("fp is NULL!!!!!!!!!!!!!!");
-    // if(((ConstFormalParameter) fp) == null) System.out.println("fp is not a ConstFormalParater!!!!!!!!!!!!!!!!!!!");
-    // if(ast.E == null) System.out.println("ast.E is NULL!!!!!!!!!!!!!!!!!!!!!");
 
     if (! (fp instanceof ConstFormalParameter))
       reporter.reportError ("const actual parameter not expected here", "",
@@ -655,7 +599,6 @@ public final class Checker implements Visitor {
     else if (! eType.equals(((ConstFormalParameter) fp).T))
       reporter.reportError ("wrong type for const actual parameter", "",
                             ast.E.position);
-    //  System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~VISITCONSTACTUALPARAMETER~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
     return null;
   }
@@ -737,7 +680,6 @@ public final class Checker implements Visitor {
 
   public Object visitEmptyActualParameterSequence(EmptyActualParameterSequence ast, Object o) {
     FormalParameterSequence fps = (FormalParameterSequence) o;
-    //if(fps == null) System.out.println("fps is NULL in visitEmptyAPS");
     if (! (fps instanceof EmptyFormalParameterSequence))
       reporter.reportError ("too few actual parameters", "", ast.position);
     return null;
@@ -795,8 +737,6 @@ public final class Checker implements Visitor {
   public Object visitSimpleTypeDenoter(SimpleTypeDenoter ast, Object o) {
     Declaration binding = (Declaration) ast.I.visit(this, null);
     if (binding == null) {
-    	// TODO: Check if ast.I is a class
-    	
       reportUndeclared (ast.I);
       return StdEnvironment.errorType;
     } else if (! (binding instanceof TypeDeclaration)) {
@@ -833,13 +773,10 @@ public final class Checker implements Visitor {
   }
 
   public Object visitIdentifier(Identifier I, Object o) {
-	  //System.out.println("Visiting Identifier " + I.spelling);
     Declaration binding = retrieve(I.spelling);
     if (binding != null) {
       I.decl = binding;
-      // System.out.println("binding found");
     } else {
-    	//	System.out.println("binding not found");
     }
     
     return binding;
@@ -876,23 +813,6 @@ public final class Checker implements Visitor {
 
   // Returns the TypeDenoter of the Vname. Does not use the
   // given object.
-
-  /**
-  public Object visitDotVname(DotVname ast, Object o) {
-    ast.type = null;
-    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
-    ast.variable = ast.V.variable;
-    if (! (vType instanceof RecordTypeDenoter))
-      reporter.reportError ("record expected here", "", ast.V.position);
-    else {
-      ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
-      if (ast.type == StdEnvironment.errorType)
-        reporter.reportError ("no field \"%\" in this record type",
-                              ast.I.spelling, ast.I.position);
-    }
-    return ast.type;
-  }
-  **/
   
   private void checkClassMember(DotVname ast) {
 	String className = ((ClassTypeDenoter) ast.V.type).ClassName;
@@ -910,38 +830,31 @@ public final class Checker implements Visitor {
   }
   
   public Object visitDotVname(DotVname ast, Object o) {
-	  // System.out.println("@@@@VISIT DOT VNAME@@@@");
 	    ast.type = null;
 	    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
 	    ast.variable = ast.V.variable;
 	    
 	    if ((vType instanceof RecordTypeDenoter)) {
-	    	//  	System.out.println("@@@@@RecordTypeDenoter found@@@@@");
 	      ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
 	      if (ast.type == StdEnvironment.errorType)
 	        reporter.reportError ("no field \"%\" in this record type",
 	                              ast.I.spelling, ast.I.position);
 	    } else if ((vType instanceof ClassTypeDenoter)) {
-	    	//  	System.out.println("@@@@calling checkClassMember@@@@");
 	    	checkClassMember(ast);
 	    	
 	    } else {
-	    	// 	System.out.println("@@@@ :( @@@@");
 	    	reporter.reportError ("class instance or record expected here", "", ast.V.position);
 	    }
-	    //   System.out.println("@@@@ EXITING @@@@");
 	    return ast.type;
 	  }
   
   public Object visitSimpleVname(SimpleVname ast, Object o) {
-	  //  System.out.println("+++++++++VISIT SIMPLE V NAME++++++++++++");
     ast.variable = false;
     ast.type = StdEnvironment.errorType;
     
     Declaration binding = (Declaration) ast.I.visit(this, null);
     
     if (binding == null) {
-    	// 	System.out.println("+++++++++UNDECLARED++++++++++++");
       reportUndeclared(ast.I);
     }
     else
@@ -958,11 +871,9 @@ public final class Checker implements Visitor {
         ast.type = ((VarFormalParameter) binding).T;
         ast.variable = true;
       } else {
-    	  //  System.out.println("+++++++++ENDED UP IN ELSE++++++++++++");
         reporter.reportError ("\"%\" is not a const or var identifier",
                               ast.I.spelling, ast.I.position);
       }
-    //System.out.println("+++++++++ EXIT ++++++++++++");
     return ast.type;
   }
 
@@ -986,9 +897,7 @@ public final class Checker implements Visitor {
   // Programs
 
   public Object visitProgram(Program ast, Object o) {
-	// TODO: make sure this doesn't mess anything up
 	ast.Cl.visit(this, null);
-	//System.out.println("_______________________DONE WITH CLASSES___________________________");
 	if(!reporter.errorFound())
 		// Originally just this
 		ast.C.visit(this, null);
@@ -1030,17 +939,13 @@ public final class Checker implements Visitor {
   }
   
   private Declaration retrieve(String id) {
-	//  System.out.println("trying to retrieve " + id);
 	  Declaration d = null;
 	  if(_classIdTable != null) {
-		//  System.out.println("checking active class table");
 		  d = _classIdTable.retrieve(id);
 	  }
 	  if(null == d) {
-		 // System.out.println("checking general class table");
 		  d = _generalIdTable.retrieve(id);
 	  }
-	 // if(null == d) System.out.println("Nothing found :(");
 	  return d;
   }
   
