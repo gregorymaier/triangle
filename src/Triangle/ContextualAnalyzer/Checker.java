@@ -605,7 +605,7 @@ public final class Checker implements Visitor {
 
     if (eType instanceof ClassTypeDenoter)
     {
-    	System.out.println("classtype");
+    	//System.out.println("classtype");
     }
     
     
@@ -954,7 +954,7 @@ public final class Checker implements Visitor {
 
   public Checker (ErrorReporter reporter) {
     this.reporter = reporter;
-    this._generalIdTable = new IdentificationTable ();
+    this._generalIdTable = new IdentificationTable (false);
     this.classIdTables = new ClassIdentificationTables();
     StdEnvironment.booleanType = new BoolTypeDenoter(dummyPos);
     StdEnvironment.integerType = new IntTypeDenoter(dummyPos);
@@ -973,7 +973,19 @@ public final class Checker implements Visitor {
   
   private Declaration retrieve(String id) {
 	  Declaration d = null;
+	  
+	  /*if(StdEnvironment.StdEnvNames.contains(id)) {
+		  System.out.println("test");
+		  return _generalIdTable.retrieve(id);
+	  }*/
+	  
 	  if(_classIdTable != null) {
+		  switch(id) {
+		  case "":
+		  
+			  
+		  }
+		  
 		  d = _classIdTable.retrieve(id);
 	  }
 	  if(null == d) {
@@ -1108,7 +1120,8 @@ public final class Checker implements Visitor {
   private void establishStdEnvironment () {
 
     // getActiveIdTable().startIdentification();
-	  
+	for(String s : StdEnvironment.names)
+		StdEnvironment.StdEnvNames.add(s);
     StdEnvironment.booleanType = new BoolTypeDenoter(dummyPos);
     StdEnvironment.integerType = new IntTypeDenoter(dummyPos);
     StdEnvironment.charType = new CharTypeDenoter(dummyPos);

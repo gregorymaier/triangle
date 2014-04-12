@@ -15,8 +15,10 @@
 package Triangle;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import Triangle.AbstractSyntaxTrees.Declarations.BinaryOperatorDeclaration;
@@ -60,5 +62,7 @@ public final class StdEnvironment {
 
   public static FuncDeclaration
     chrDecl, ordDecl, eolDecl, eofDecl;
-
+  
+  public static String[] names = {"Boolean", "false", "true", "\\", "/\\", "\\/", "Integer", "maxint", "+", "-", "*", "/", "//", "<", "<=", ">", ">=", "Char", "chr", "ord", "eof", "eol","get", "put", "getint", "putint", "geteol", "puteol", "=", "\\="};
+  public static Set<String> StdEnvNames = new HashSet<String>();
 }

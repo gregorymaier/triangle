@@ -25,7 +25,7 @@ public class ClassIdentificationTables {
 		// If there is not already a class defined with this name
 		if(!mClassScopes.containsKey(className)) {
 			// Add a IdTable for it
-			mClassScopes.put(className, new IdentificationTable());
+			mClassScopes.put(className, new IdentificationTable(true));
 			actionResult = true;
 		}
 		return actionResult;

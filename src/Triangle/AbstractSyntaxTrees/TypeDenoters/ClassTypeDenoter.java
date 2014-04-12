@@ -22,7 +22,7 @@ public class ClassTypeDenoter extends TypeDenoter {
 
 	@Override
 	public Object visit(Visitor v, Object o) {
-		System.out.println("Visit ClassTypeDenoter");
+		//System.out.println("Visit ClassTypeDenoter");
 		return v.visitClassTypeDenoter(this, o);
 	}
 

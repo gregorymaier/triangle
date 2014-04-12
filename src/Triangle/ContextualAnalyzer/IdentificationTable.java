@@ -24,10 +24,12 @@ public final class IdentificationTable {
   private int level;
   private IdEntry latest;
   private Map<String, IdEntry> level0Declarations = new TreeMap<String, IdEntry>();
+  private boolean classTable = false;
 
-  public IdentificationTable () {
+  public IdentificationTable (boolean isClassTable) {
     level = 0;
     latest = null;
+    classTable = isClassTable;
   }
 
   // Opens a new level in the identification table, 1 higher than the
@@ -117,7 +119,7 @@ public final class IdentificationTable {
     // and we are in a method call
     // and it wasnt prefixed
     // then you can't access it
-    if(entry != null && entry.level == 0 && Checker.inMethodDeclaration && !Checker.inVisitDotVname)
+    if(classTable && entry != null && entry.level == 0 && Checker.inMethodDeclaration && !Checker.inVisitDotVname)
     	attr = null;
     
     return attr;
