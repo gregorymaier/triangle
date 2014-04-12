@@ -18,6 +18,8 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import TAM.Instruction;
 import TAM.Machine;
@@ -138,9 +140,12 @@ public final class Encoder implements Visitor {
 
   public Object visitLetCommand(LetCommand ast, Object o) {
     Frame frame = (Frame) o;
+    // Get size of declared variables
     int extraSize = ((Integer) ast.D.visit(this, frame)).intValue();
+    // 
     ast.C.visit(this, new Frame(frame, extraSize));
     if (extraSize > 0)
+      // Pop off added since they are now out of scope
       emit(Machine.POPop, 0, 0, extraSize);
     return null;
   }
@@ -168,11 +173,17 @@ public final class Encoder implements Visitor {
 
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     ast.type.visit(this, null);
     return ast.AA.visit(this, o);
   }
 
   public Object visitBinaryExpression(BinaryExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     Integer valSize = (Integer) ast.type.visit(this, null);
     int valSize1 = ((Integer) ast.E1.visit(this, frame)).intValue();
@@ -184,15 +195,24 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitCallExpression(CallExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
+    // size of what will be left on stack
     Integer valSize = (Integer) ast.type.visit(this, null);
+    // size of arguments below current stack pointer
     Integer argsSize = (Integer) ast.APS.visit(this, frame);
+    
     ast.I.visit(this, new Frame(frame.level, argsSize));
     return valSize;
   }
 
   public Object visitCharacterExpression(CharacterExpression ast,
 						Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     Integer valSize = (Integer) ast.type.visit(this, null);
     emit(Machine.LOADLop, 0, 0, ast.CL.spelling.charAt(1));
@@ -200,10 +220,16 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitEmptyExpression(EmptyExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     return new Integer(0);
   }
 
   public Object visitIfExpression(IfExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     Integer valSize;
     int jumpifAddr, jumpAddr;
@@ -222,6 +248,9 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitIntegerExpression(IntegerExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     Integer valSize = (Integer) ast.type.visit(this, null);
     emit(Machine.LOADLop, 0, 0, Integer.parseInt(ast.IL.spelling));
@@ -229,6 +258,9 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitLetExpression(LetExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     ast.type.visit(this, null);
     int extraSize = ((Integer) ast.D.visit(this, frame)).intValue();
@@ -240,11 +272,17 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitRecordExpression(RecordExpression ast, Object o){
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     ast.type.visit(this, null);
     return ast.RA.visit(this, o);
   }
 
   public Object visitUnaryExpression(UnaryExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     Integer valSize = (Integer) ast.type.visit(this, null);
     ast.E.visit(this, frame);
@@ -253,6 +291,9 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitVnameExpression(VnameExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     Integer valSize = (Integer) ast.type.visit(this, null);
     encodeFetch(ast.V, frame, valSize.intValue());
@@ -263,10 +304,16 @@ public final class Encoder implements Visitor {
   // Declarations
   public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast,
 					       Object o){
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     return new Integer(0);
   }
 
   public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     int extraSize = 0;
 
@@ -288,6 +335,15 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
+	  
+	  
+	  ////////CLASS DEFINITION GUARD /////////
+	  boolean turnGuardBackOn = this.inClassDefinition;
+	  this.inClassDefinition = false;
+	  /////  END CLASS DEFINITION GUARD //////
+	  
+	  
+	  
     Frame frame = (Frame) o;
     int jumpAddr = nextInstrAddr;
     int argsSize = 0, valSize = 0;
@@ -303,12 +359,32 @@ public final class Encoder implements Visitor {
       Frame frame2 = new Frame(frame.level + 1, Machine.linkDataSize);
       valSize = ((Integer) ast.E.visit(this, frame2)).intValue();
     }
+    // Pops argsSize off and leaves valSize there <- size of return obj
     emit(Machine.RETURNop, valSize, 0, argsSize);
     patch(jumpAddr, nextInstrAddr);
+    
+    ////////CLASS DEFINITION GUARD /////////
+    if(turnGuardBackOn) {
+    	this.inClassDefinition = true;
+    	classRecords
+    	.get(className)
+    	.addMethodAddress(ast.I.spelling, jumpAddr);
+    }
+    /////  END CLASS DEFINITION GUARD //////
+    
     return new Integer(0);
   }
 
   public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
+
+	  
+	  ////////CLASS DEFINITION GUARD /////////
+	  boolean turnGuardBackOn = this.inClassDefinition;
+	  this.inClassDefinition = false;
+	  /////  END CLASS DEFINITION GUARD //////
+	  
+	  
+	  
     Frame frame = (Frame) o;
     int jumpAddr = nextInstrAddr;
     int argsSize = 0;
@@ -327,10 +403,28 @@ public final class Encoder implements Visitor {
     }
     emit(Machine.RETURNop, 0, 0, argsSize);
     patch(jumpAddr, nextInstrAddr);
+    
+    
+    ////////CLASS DEFINITION GUARD /////////
+    if(turnGuardBackOn) {
+    	this.inClassDefinition = true;
+    	classRecords
+    	.get(className)
+    	.addMethodAddress(ast.I.spelling, jumpAddr);
+    }
+    /////  END CLASS DEFINITION GUARD //////
+    
+    
     return new Integer(0);
   }
 
   public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {
+	  ////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition)
+	  {
+		  // NO GUARD HERE BECAUSE WE NEED TO visit in case they are methods
+	  }
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     int extraSize1, extraSize2;
 
@@ -341,6 +435,9 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     // just to ensure the type's representation is decided
     ast.T.visit(this, null);
     return new Integer(0);
@@ -348,10 +445,18 @@ public final class Encoder implements Visitor {
 
   public Object visitUnaryOperatorDeclaration(UnaryOperatorDeclaration ast,
 					      Object o) {
+	  ////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     return new Integer(0);
   }
 
+  
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {
+	  ////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
+	  
     Frame frame = (Frame) o;
     int extraSize;
 
@@ -366,6 +471,11 @@ public final class Encoder implements Visitor {
   // Array Aggregates
   public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast,
 					    Object o) {
+	  
+	//////// CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
+	  
     Frame frame = (Frame) o;
     int elemSize = ((Integer) ast.E.visit(this, frame)).intValue();
     Frame frame1 = new Frame(frame, elemSize);
@@ -374,13 +484,23 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitSingleArrayAggregate(SingleArrayAggregate ast, Object o) {
+	////////CLASS DEFINITION GUARD /////////
+	if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
+	  
     return ast.E.visit(this, o);
   }
 
 
+  /**
+   * Return the sum of each record field
+   */
   // Record Aggregates
   public Object visitMultipleRecordAggregate(MultipleRecordAggregate ast,
 					     Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     int fieldSize = ((Integer) ast.E.visit(this, frame)).intValue();
     Frame frame1 = new Frame (frame, fieldSize);
@@ -453,6 +573,9 @@ public final class Encoder implements Visitor {
 
   // Actual Parameters
   public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     return ast.E.visit (this, o);
   }
 
@@ -524,6 +647,9 @@ public final class Encoder implements Visitor {
 
   // Type Denoters
   public Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     return new Integer(0);
   }
 
@@ -556,11 +682,17 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitErrorTypeDenoter(ErrorTypeDenoter ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     return new Integer(0);
   }
 
   public Object visitSimpleTypeDenoter(SimpleTypeDenoter ast,
 					   Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     return new Integer(0);
   }
 
@@ -573,6 +705,9 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     int typeSize;
     if (ast.entity == null) {
       typeSize = ((Integer) ast.FT.visit(this, new Integer(0))).intValue();
@@ -619,10 +754,16 @@ public final class Encoder implements Visitor {
 
   // Literals, Identifiers and Operators
   public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     return null;
   }
 
   public Object visitIdentifier(Identifier ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     if (ast.decl.entity instanceof KnownRoutine) {
       ObjectAddress address = ((KnownRoutine) ast.decl.entity).address;
@@ -672,9 +813,13 @@ public final class Encoder implements Visitor {
     return null;
   }
 
-
+  //TODO: If the Variable is a class we need to make sure the offset is
+  //      correct offset from base of class on stack
   // Value-or-variable names
   public Object visitDotVname(DotVname ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     RuntimeEntity baseObject = (RuntimeEntity) ast.V.visit(this, frame);
     ast.offset = ast.V.offset + ((Field) ast.I.decl.entity).fieldOffset;
@@ -722,8 +867,48 @@ public final class Encoder implements Visitor {
 
   // Programs
   public Object visitProgram(Program ast, Object o) {
+	// Visit class Declarations
+	// Guard declarations while visiting class declarations so
+	// only code for methods is generated
+	this.inClassDefinition = true;
+	ast.Cl.visit(this, o);
+	this.inClassDefinition = false;
+	
     return ast.C.visit(this, o);
   }
+  
+  /////////////////////////////////////////////////////////////////////
+  // CLASSES
+  /////////////////////////////////////////////////////////////////////
+  
+  //TODO: This needs to:
+  //(1) create the functions and procedures for the class and store their addresses
+  //(2) 
+  @Override
+  public Object visitClassDeclaration(ClassDeclaration ast, Object o) {
+	  ast.CI.visit(this, o);
+	  ast.D.visit(this, o);
+	  return null;
+  }
+
+  @Override
+  public Object visitClassIdentifier(ClassIdentifier ast, Object o) {
+	  Frame frame = (Frame) o;
+	  className = ast.spelling;
+	  return null;
+  }
+
+  @Override
+  public Object visitSequentialClassDeclaration(SequentialClassDeclaration ast,
+		  Object o) {
+	  ast.C1.visit(this, o);
+	  ast.C2.visit(this, o);
+	  return null;
+  }
+  
+  /////////////////////////////////////////////////////////////////////
+  // END CLASSES
+  /////////////////////////////////////////////////////////////////////
 
   public Encoder (ErrorReporter reporter) {
     this.reporter = reporter;
@@ -895,6 +1080,13 @@ public final class Encoder implements Visitor {
   // the constant or variable is fetched at run-time.
   // valSize is the size of the constant or variable's value.
 
+  /**
+   * Generates code to fetch the value of a named constant or variable
+   * and push it on to the stack.
+   * @param V
+   * @param frame
+   * @param valSize the size of the constant or variable's value.
+   */
   private void encodeStore(Vname V, Frame frame, int valSize) {
 
     RuntimeEntity baseObject = (RuntimeEntity) V.visit(this, frame);
@@ -935,6 +1127,13 @@ public final class Encoder implements Visitor {
   // the constant or variable is fetched at run-time.
   // valSize is the size of the constant or variable's value.
 
+  /**
+   * Generates code to fetch the value of a named constant or variable
+   * and push it on to the stack.
+   * @param V
+   * @param frame
+   * @param valSize the size of the constant or variable's value
+   */
   private void encodeFetch(Vname V, Frame frame, int valSize) {
 
     RuntimeEntity baseObject = (RuntimeEntity) V.visit(this, frame);
@@ -980,6 +1179,12 @@ public final class Encoder implements Visitor {
   // frameSize is the anticipated size of the local stack frame when
   // the variable is addressed at run-time.
 
+  /**
+   * Generates code to compute and push the address of a named variable.
+   * vname is the program phrase that names this variable.
+   * @param V
+   * @param frame
+   */
   private void encodeFetchAddress (Vname V, Frame frame) {
 
     RuntimeEntity baseObject = (RuntimeEntity) V.visit(this, frame);
@@ -1003,46 +1208,66 @@ public final class Encoder implements Visitor {
     }
   }
 
-@Override
-public Object visitClassDeclaration(ClassDeclaration ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
-}
+  public static Map<String, ClassRecord> classRecords = new HashMap<String, ClassRecord>();
+  /**
+   * Only declarations we need to guard
+   */
+  private boolean inClassDefinition = false;
+  private String className = null;
+  
+  /////////////////////////////////////////////////////////////////////
+  // METHODS
+  /////////////////////////////////////////////////////////////////////
+  
+  // TODO: These should generate code to push correct arguments onto the stack
+  //       Also need to find Address of the func/proc so we know where to jump to
+  
+  @Override // This is a PROC
+  public Object visitMethodCallCommand(MethodCallCommand ast, Object o) {
+	  ////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	  /////  END CLASS DEFINITION GUARD //////
+	  
+	  
+	  
+	  // TODO Auto-generated method stub
+	  return null;
+  }
 
-@Override
-public Object visitClassIdentifier(ClassIdentifier ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
-}
+  @Override // This is a FUNC
+  public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
+	  ////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	  /////  END CLASS DEFINITION GUARD //////
+	  
+	  
+	  
+	  // TODO Auto-generated method stub
+	  return null;
+  }
+  
+  @Override
+  public Object visitMethodCallVname(MethodCallVname ast, Object o) {
+	  ////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	  /////  END CLASS DEFINITION GUARD //////
+	  
+	  
+	  
+	  // TODO Auto-generated method stub
+	  return null;
+  }
 
-@Override
-public Object visitSequentialClassDeclaration(SequentialClassDeclaration ast,
-		Object o) {
-	// TODO Auto-generated method stub
-	return null;
-}
+  /////////////////////////////////////////////////////////////////////
+  // END METHODS
+  /////////////////////////////////////////////////////////////////////
 
-@Override
-public Object visitMethodCallCommand(MethodCallCommand ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
-}
-
-@Override
-public Object visitMethodCallVname(MethodCallVname ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
-}
-
-@Override
-public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
-}
-
-@Override
-public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
-}
+  /**
+   * This needs to return size of the class object pushed on the stack
+   */
+  @Override
+  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
+	  // TODO Auto-generated method stub
+	  return null;
+  }
 }

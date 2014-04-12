@@ -111,7 +111,15 @@ public final class IdentificationTable {
         entry = entry.previous;
       }
     }
-
+    
+    // if we found something
+    // and its at base level
+    // and we are in a method call
+    // and it wasnt prefixed
+    // then you can't access it
+    if(entry != null && entry.level == 0 && Checker.inMethodDeclaration && !Checker.inVisitDotVname)
+    	attr = null;
+    
     return attr;
   }
   

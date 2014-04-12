@@ -417,6 +417,7 @@ public final class Checker implements Visitor {
     return null;
   }
 
+  public static boolean inMethodDeclaration = false;
   public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     getActiveIdTable().enter(ast.I.spelling, ast);
@@ -434,7 +435,11 @@ public final class Checker implements Visitor {
                             ast.I.spelling, ast.position);
     getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
+    
+    inMethodDeclaration = true;
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+    inMethodDeclaration = false;
+    
     getActiveIdTable().closeScope();
     if (! ast.T.equals(eType))
       reporter.reportError ("body of function \"%\" has wrong type",
@@ -449,7 +454,12 @@ public final class Checker implements Visitor {
                             ast.I.spelling, ast.position);
     getActiveIdTable().openScope();
     ast.FPS.visit(this, null);
+    
+    inMethodDeclaration = true;
     ast.C.visit(this, null);
+    inMethodDeclaration = false;
+    
+    
     getActiveIdTable().closeScope();
     return null;
   }
@@ -593,9 +603,17 @@ public final class Checker implements Visitor {
     FormalParameter fp = (FormalParameter) o;
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
 
-    if (! (fp instanceof ConstFormalParameter))
+    if (eType instanceof ClassTypeDenoter)
+    {
+    	System.out.println("classtype");
+    }
+    
+    
+    
+    if (! (fp instanceof ConstFormalParameter)) {
       reporter.reportError ("const actual parameter not expected here", "",
                             ast.position);
+    }
     else if (! eType.equals(((ConstFormalParameter) fp).T))
       reporter.reportError ("wrong type for const actual parameter", "",
                             ast.E.position);
@@ -815,6 +833,8 @@ public final class Checker implements Visitor {
   // given object.
   
   private void checkClassMember(DotVname ast) {
+	  
+	  
 	String className = ((ClassTypeDenoter) ast.V.type).ClassName;
   	IdentificationTable classTable = this.classIdTables.getIdTableForClass(className);
   	IdEntry entry = classTable.retrieveClassMember(ast.I.spelling);
@@ -823,12 +843,19 @@ public final class Checker implements Visitor {
   		if(ast.type == StdEnvironment.errorType)
   			reporter.reportError("class member \"%\" of " + className + " has no type", 
   					ast.I.spelling, ast.position);
+  		/**
+  		 * Tie the declaration to the identifier
+  		 */
+  		ast.I.decl = ast;
   	} else {
   		reporter.reportError("\"%\" is not a member of class " + className,
   				ast.I.spelling, ast.I.position);
   	}
+  	
+  	
   }
   
+  public static boolean inVisitDotVname = false;
   public Object visitDotVname(DotVname ast, Object o) {
 	    ast.type = null;
 	    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
@@ -839,8 +866,14 @@ public final class Checker implements Visitor {
 	      if (ast.type == StdEnvironment.errorType)
 	        reporter.reportError ("no field \"%\" in this record type",
 	                              ast.I.spelling, ast.I.position);
+	      //TODO: 
 	    } else if ((vType instanceof ClassTypeDenoter)) {
+	    	
+	    	
+	    	inVisitDotVname = true;
 	    	checkClassMember(ast);
+	    	inVisitDotVname = false;
+	    	
 	    	
 	    } else {
 	    	reporter.reportError ("class instance or record expected here", "", ast.V.position);

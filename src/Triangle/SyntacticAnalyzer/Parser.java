@@ -78,6 +78,7 @@ import Triangle.AbstractSyntaxTrees.Terminals.Identifier;
 import Triangle.AbstractSyntaxTrees.Terminals.IntegerLiteral;
 import Triangle.AbstractSyntaxTrees.Terminals.Operator;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.ArrayTypeDenoter;
+import Triangle.AbstractSyntaxTrees.TypeDenoters.ClassTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.FieldTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.MultipleFieldTypeDenoter;
 import Triangle.AbstractSyntaxTrees.TypeDenoters.RecordTypeDenoter;
@@ -89,6 +90,8 @@ import Triangle.AbstractSyntaxTrees.Vname.MethodCallVname;
 import Triangle.AbstractSyntaxTrees.Vname.SimpleVname;
 import Triangle.AbstractSyntaxTrees.Vname.SubscriptVname;
 import Triangle.AbstractSyntaxTrees.Vname.Vname;
+import Triangle.CodeGenerator.ClassRecord;
+import Triangle.CodeGenerator.Encoder;
 
 public class Parser {
 
@@ -210,19 +213,31 @@ public class Parser {
 	  return classesAST;
   }
   
+  private boolean inClass = false;
+  private ClassRecord newClassRecord;
   // There is only one form of a class declaration so this is pretty simple
   Classes parseSingleClass() throws SyntaxError
   {
+	  
 	  SourcePosition commandPos = new SourcePosition();
 	  start(commandPos);
 	  
 	  ClassIdentifier CI = parseClassIdentifier();
 	  accept(Token.IS); // ~
 	  
+	  
+	  newClassRecord = new ClassRecord();
+	  
+	  // Gurad to only allow vars, procs, and funcs
+	  inClass = true;
 	  Declaration D = parseDeclaration();
+	  inClass = false;
+	  
 	  accept(Token.END); // end
 	  
 	  finish(commandPos);
+	  
+	  Encoder.classRecords.put(CI.spelling, newClassRecord);
 	  return new ClassDeclaration(CI, D, commandPos);
   }
 
@@ -286,6 +301,7 @@ public class Parser {
     return I;
   }
   
+  private String className = "";
   ClassIdentifier parseClassIdentifier() throws SyntaxError {
 	  ClassIdentifier I = null;
 
@@ -293,6 +309,8 @@ public class Parser {
 	      previousTokenPosition = currentToken.position;
 	      String spelling = currentToken.spelling;
 	      I = new ClassIdentifier(spelling, previousTokenPosition);
+	      // For auto inserted params
+	      className = spelling;
 	      currentToken = lexicalAnalyser.scan();
 	    } else {
 	      I = null;
@@ -658,6 +676,8 @@ public class Parser {
     return vnameAST;
   }
 
+  private Vname methodVName;
+  private boolean inMethodCall = false;
   Vname parseRestOfVname(Identifier identifierAST) throws SyntaxError {
     SourcePosition vnamePos = new SourcePosition();
     vnamePos = identifierAST.position;
@@ -672,10 +692,14 @@ public class Parser {
         
         if(currentToken.kind == Token.LPAREN) // We have a method call
         {
+        	methodVName = vAST;
+        	inMethodCall = true;
         	acceptIt();
         	ActualParameterSequence apsAST = parseActualParameterSequence();
         	accept(Token.RPAREN);
         	finish(vnamePos);
+        	inMethodCall = false;
+        	methodVName = null;
         	return new MethodCallVname(vAST, iAST, apsAST, vnamePos);
         }
         // Otherwise do what would have been done before any modifications
@@ -714,6 +738,7 @@ public class Parser {
     return declarationAST;
   }
 
+  private boolean addClassParam = false;
   Declaration parseSingleDeclaration() throws SyntaxError {
     Declaration declarationAST = null; // in case there's a syntactic error
 
@@ -724,6 +749,12 @@ public class Parser {
 
     case Token.CONST:
       {
+    	if(inClass) 
+    	{
+    		syntacticError("Only var, proc and func declarations are allowed in class definitions",
+    		        "");
+    		break;
+    	}
         acceptIt();
         Identifier iAST = parseIdentifier();
         accept(Token.IS);
@@ -735,35 +766,69 @@ public class Parser {
 
     case Token.VAR:
       {
+    	  boolean addMember = false;
+        	if(inClass) {
+        		addMember = true;
+        		inClass = false;
+        	}
         acceptIt();
         Identifier iAST = parseIdentifier();
         accept(Token.COLON);
         TypeDenoter tAST = parseTypeDenoter();
         finish(declarationPos);
         declarationAST = new VarDeclaration(iAST, tAST, declarationPos);
+        
+        if(addMember) {
+        	newClassRecord.addMember(iAST.spelling);
+        	inClass = true;
+        }
       }
       break;
 
     case Token.PROC:
       {
+    	boolean addMember = false;
+      	if(inClass) {
+      		addMember = true;
+      		inClass = false;
+      	}
         acceptIt();
         Identifier iAST = parseIdentifier();
         accept(Token.LPAREN);
+        if(addMember)
+        	addClassParam = true;
         FormalParameterSequence fpsAST = parseFormalParameterSequence();
+        if(addMember)
+        	addClassParam = false;
+        
         accept(Token.RPAREN);
         accept(Token.IS);
         Command cAST = parseSingleCommand();
         finish(declarationPos);
         declarationAST = new ProcDeclaration(iAST, fpsAST, cAST, declarationPos);
+        
+        if(addMember) {
+        	newClassRecord.addMember(iAST.spelling);
+        	inClass = true;
+        }
       }
       break;
 
     case Token.FUNC:
       {
+    	  boolean addMember = false;
+        	if(inClass) {
+        		addMember = true;
+        		inClass = false;
+        	}
         acceptIt();
         Identifier iAST = parseIdentifier();
         accept(Token.LPAREN);
+        if(addMember)
+        	addClassParam = true;
         FormalParameterSequence fpsAST = parseFormalParameterSequence();
+        if(addMember)
+        	addClassParam = false;
         accept(Token.RPAREN);
         accept(Token.COLON);
         TypeDenoter tAST = parseTypeDenoter();
@@ -772,11 +837,22 @@ public class Parser {
         finish(declarationPos);
         declarationAST = new FuncDeclaration(iAST, fpsAST, tAST, eAST,
           declarationPos);
+        
+        if(addMember) {
+        	newClassRecord.addMember(iAST.spelling);
+        	inClass = true;
+        }
       }
       break;
 
     case Token.TYPE:
       {
+    	if(inClass) 
+      	{
+      		syntacticError("Only var, proc and func declarations are allowed in class definitions",
+      		        "");
+      		break;
+      	}
         acceptIt();
         Identifier iAST = parseIdentifier();
         accept(Token.IS);
@@ -800,7 +876,13 @@ public class Parser {
 // PARAMETERS
 //
 ///////////////////////////////////////////////////////////////////////////////
-
+  //  var instance: className parameter will be added to func/proc defs by
+  // another program that I will write
+  /**
+   * 
+   * @return
+   * @throws SyntaxError
+   */
   FormalParameterSequence parseFormalParameterSequence() throws SyntaxError {
     FormalParameterSequence formalsAST;
 
@@ -809,14 +891,63 @@ public class Parser {
     start(formalsPos);
     if (currentToken.kind == Token.RPAREN) {
       finish(formalsPos);
-      formalsAST = new EmptyFormalParameterSequence(formalsPos);
+      
+      if(addClassParam) {
+    	  formalsAST = new SingleFormalParameterSequence(
+    			new VarFormalParameter(
+    					  (new Identifier("this", formalsPos)),
+    					  (new ClassTypeDenoter(formalsPos, className)),
+    					   formalsPos),
+    			formalsPos);
+      } else {
+    	  formalsAST = new EmptyFormalParameterSequence(formalsPos);
+      }
 
     } else {
-      formalsAST = parseProperFormalParameterSequence();
+      if(!addClassParam) {
+    	  formalsAST = parseProperFormalParameterSequence();
+      } else {
+    	  formalsAST = new MultipleFormalParameterSequence(
+    			  /////////////////////////////////
+    			  new VarFormalParameter(
+    			      (new Identifier("this", formalsPos)),
+    			      
+    			      
+    			      (new ClassTypeDenoter(formalsPos, className)),
+    			      formalsPos) // VarFormalParam
+    			  //////////////////////////////////
+    			  
+    			  , parseProperFormalParameterSequence()
+    			  , formalsPos);
+      }
     }
     return formalsAST;
   }
 
+  /*
+   * case Token.VAR:
+      {
+        acceptIt();
+        Identifier iAST = parseIdentifier();
+        accept(Token.COLON);
+        TypeDenoter tAST = parseTypeDenoter();
+        finish(formalPos);
+        formalAST = new VarFormalParameter(iAST, tAST, formalPos);
+      }
+      break;
+      
+      TypeDenoter typeAST = null;
+      Identifier iAST = parseIdentifier();
+        finish(typePos);
+        typeAST = new SimpleTypeDenoter(iAST, typePos);
+        
+            Identifier I = null;
+
+    if (currentToken.kind == Token.IDENTIFIER) {
+      previousTokenPosition = currentToken.position;
+      String spelling = currentToken.spelling;
+      I = new Identifier(spelling, previousTokenPosition);
+   */
   FormalParameterSequence parseProperFormalParameterSequence() throws SyntaxError {
     FormalParameterSequence formalsAST = null; // in case there's a syntactic error;
 
@@ -830,9 +961,17 @@ public class Parser {
       formalsAST = new MultipleFormalParameterSequence(fpAST, fpsAST,
         formalsPos);
 
-    } else {
+    } else { // case there was only 1 formal parameter
       finish(formalsPos);
-      formalsAST = new SingleFormalParameterSequence(fpAST, formalsPos);
+      /*formalsAST = new MultipleFormalParameterSequence(
+    		  new VarFormalParameter(
+					  (new Identifier("this", formalsPos)),
+					  (new SimpleTypeDenoter(
+							  new Identifier(className, formalsPos),
+					   formalsPos)),
+					   formalsPos),*/
+    		  formalsAST = new SingleFormalParameterSequence(fpAST, formalsPos);
+    		  //formalsPos);
     }
     return formalsAST;
   }
@@ -903,6 +1042,11 @@ public class Parser {
   }
 
 
+  /** these are commands/expressions NEED TO PASS IN CLASS REF
+   * When we are parsing a methodcallvname we get here
+   * @return
+   * @throws SyntaxError
+   */
   ActualParameterSequence parseActualParameterSequence() throws SyntaxError {
     ActualParameterSequence actualsAST;
 
@@ -911,14 +1055,43 @@ public class Parser {
     start(actualsPos);
     if (currentToken.kind == Token.RPAREN) {
       finish(actualsPos);
-      actualsAST = new EmptyActualParameterSequence(actualsPos);
+      
+      /**
+       * We need to pass reference to class
+       * case Token.VAR:
+      {
+        acceptIt();
+        Vname vAST = parseVname();
+        finish(actualPos);
+        actualAST = new VarActualParameter(vAST, actualPos);
+      }
+      break;
+       */
+      if(inMethodCall) {
+    	  // Put in the Reference
+    	  actualsAST = new SingleActualParameterSequence(new VarActualParameter(this.methodVName, actualsPos), actualsPos);
+      } else {
+    	  actualsAST = new EmptyActualParameterSequence(actualsPos);
+      }
 
-    } else {
-      actualsAST = parseProperActualParameterSequence();
+    } else { // We have at least 1
+      if(!inMethodCall) {
+    	  actualsAST = parseProperActualParameterSequence();
+      } else {
+    	  actualsAST = new MultipleActualParameterSequence(
+			  new VarActualParameter(this.methodVName, actualsPos),
+			  parseProperActualParameterSequence(),
+			  actualsPos);
+      }
     }
     return actualsAST;
   }
 
+  /**
+   * Called from above
+   * @return
+   * @throws SyntaxError
+   */
   ActualParameterSequence parseProperActualParameterSequence() throws SyntaxError {
     ActualParameterSequence actualsAST = null; // in case there's a syntactic error
 
@@ -932,7 +1105,7 @@ public class Parser {
       finish(actualsPos);
       actualsAST = new MultipleActualParameterSequence(apAST, apsAST,
         actualsPos);
-    } else {
+    } else { // case there is only 1 parameter there normally so now 2 if in class
       finish(actualsPos);
       actualsAST = new SingleActualParameterSequence(apAST, actualsPos);
     }
