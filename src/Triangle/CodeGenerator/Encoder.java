@@ -104,6 +104,8 @@ public final class Encoder implements Visitor {
 
   // Commands
   public Object visitAssignCommand(AssignCommand ast, Object o) {
+	  System.out.println("visitAssignCommand");
+	  System.out.println(ast.V.getClass());
     Frame frame = (Frame) o;
     Integer valSize = (Integer) ast.E.visit(this, frame);
     encodeStore(ast.V, new Frame (frame, valSize.intValue()),
@@ -291,6 +293,12 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitVnameExpression(VnameExpression ast, Object o) {
+	  System.out.println("visitVnameExpression");
+	  if(ast.type instanceof ClassTypeDenoter)
+	  {
+		  System.out.println("CLASS INSTANCE IN VISITVNAMEEXPRESSION");
+		 
+	  }
 ////////CLASS DEFINITION GUARD /////////
 	  if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
@@ -365,10 +373,11 @@ public final class Encoder implements Visitor {
     
     ////////CLASS DEFINITION GUARD /////////
     if(turnGuardBackOn) {
+    	System.out.println("function " + ast.I.spelling + " is at address " + jumpAddr);
     	this.inClassDefinition = true;
     	classRecords
     	.get(className)
-    	.addMethodAddress(ast.I.spelling, jumpAddr);
+    	.addMethodAddress(ast.I.spelling, ast.entity);
     }
     /////  END CLASS DEFINITION GUARD //////
     
@@ -384,7 +393,7 @@ public final class Encoder implements Visitor {
 	  /////  END CLASS DEFINITION GUARD //////
 	  
 	  
-	  
+	  System.out.println("visitProcDeclaration");
     Frame frame = (Frame) o;
     int jumpAddr = nextInstrAddr;
     int argsSize = 0;
@@ -392,6 +401,8 @@ public final class Encoder implements Visitor {
     emit(Machine.JUMPop, 0, Machine.CBr, 0);
     ast.entity = new KnownRoutine (Machine.closureSize, frame.level,
                                 nextInstrAddr);
+    
+
     writeTableDetails(ast);
     if (frame.level == Machine.maxRoutineLevel)
       reporter.reportRestriction("can't nest routines so deeply");
@@ -401,19 +412,22 @@ public final class Encoder implements Visitor {
       Frame frame2 = new Frame(frame.level + 1, Machine.linkDataSize);
       ast.C.visit(this, frame2);
     }
+    System.out.println("argsize in proc dec: " + argsSize);
     emit(Machine.RETURNop, 0, 0, argsSize);
     patch(jumpAddr, nextInstrAddr);
     
     
-    ////////CLASS DEFINITION GUARD /////////
-    if(turnGuardBackOn) {
-    	this.inClassDefinition = true;
-    	classRecords
-    	.get(className)
-    	.addMethodAddress(ast.I.spelling, jumpAddr);
-    }
-    /////  END CLASS DEFINITION GUARD //////
+////////CLASS DEFINITION GUARD /////////
+if(turnGuardBackOn) {
+System.out.println("function " + ast.I.spelling + " is at address " + jumpAddr);
+this.inClassDefinition = true;
+classRecords
+.get(className)
+.addMethodAddress(ast.I.spelling, ast.entity);
+}
+/////  END CLASS DEFINITION GUARD //////
     
+System.out.println("nextInstrAddr:" + nextInstrAddr);
     
     return new Integer(0);
   }
@@ -461,6 +475,16 @@ public final class Encoder implements Visitor {
     int extraSize;
 
     extraSize = ((Integer) ast.T.visit(this, null)).intValue();
+    
+    if(ast.T instanceof ClassTypeDenoter)
+    {
+    	System.out.println("vardeclaration is class");
+    	extraSize = classRecords.get(((ClassTypeDenoter)ast.T).ClassName).size();
+    	System.out.println("Pushing " + extraSize + " words for " + ((ClassTypeDenoter)ast.T).ClassName + " Object");
+    	System.out.println("address = " + frame.size);
+    	
+    }
+    
     emit(Machine.PUSHop, 0, 0, extraSize);
     ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
     writeTableDetails(ast);
@@ -516,6 +540,7 @@ public final class Encoder implements Visitor {
 
   // Formal Parameters
   public Object visitConstFormalParameter(ConstFormalParameter ast, Object o) {
+	  
     Frame frame = (Frame) o;
     int valSize = ((Integer) ast.T.visit(this, null)).intValue();
     ast.entity = new UnknownValue (valSize, frame.level, -frame.size - valSize);
@@ -541,7 +566,12 @@ public final class Encoder implements Visitor {
     return new Integer(argsSize);
   }
 
+  //TODO:
   public Object visitVarFormalParameter(VarFormalParameter ast, Object o) {
+	  System.out.println("visitVarFormalParameter");
+	  if(ast.T instanceof ClassTypeDenoter) {
+		  System.out.println("var formal parameter is class object");
+	  }
     Frame frame = (Frame) o;
     ast.T.visit(this, null);
     ast.entity = new UnknownAddress (Machine.addressSize, frame.level,
@@ -573,12 +603,17 @@ public final class Encoder implements Visitor {
 
   // Actual Parameters
   public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
+	  System.out.println("visitConstActualParameter");
+	  if(ast.E.type instanceof ClassTypeDenoter) {
+		  System.out.println("const actual parameter is class object");
+	  }
 ////////CLASS DEFINITION GUARD /////////
 	  if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
     return ast.E.visit (this, o);
   }
 
+  
   public Object visitFuncActualParameter(FuncActualParameter ast, Object o) {
     Frame frame = (Frame) o;
     if (ast.I.decl.entity instanceof KnownRoutine) {
@@ -598,7 +633,6 @@ public final class Encoder implements Visitor {
     }
     return new Integer(Machine.closureSize);
   }
-
   public Object visitProcActualParameter(ProcActualParameter ast, Object o) {
     Frame frame = (Frame) o;
     if (ast.I.decl.entity instanceof KnownRoutine) {
@@ -619,7 +653,10 @@ public final class Encoder implements Visitor {
     return new Integer(Machine.closureSize);
   }
 
+  
+  //TODO: here ast.V is 
   public Object visitVarActualParameter(VarActualParameter ast, Object o) {
+	  System.out.println("visit var actual param");
     encodeFetchAddress(ast.V, (Frame) o);
     return new Integer(Machine.addressSize);
   }
@@ -782,6 +819,8 @@ public final class Encoder implements Visitor {
       int displacement = ((EqualityRoutine) ast.decl.entity).displacement;
       emit(Machine.LOADLop, 0, 0, frame.size / 2);
       emit(Machine.CALLop, Machine.SBr, Machine.PBr, displacement);
+    } else {
+    	System.out.println("ERROR IN VISIT IDENTIFIER");
     }
     return null;
   }
@@ -813,6 +852,7 @@ public final class Encoder implements Visitor {
     return null;
   }
 
+  //TODO:**********************
   //TODO: If the Variable is a class we need to make sure the offset is
   //      correct offset from base of class on stack
   // Value-or-variable names
@@ -822,13 +862,62 @@ public final class Encoder implements Visitor {
 	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     RuntimeEntity baseObject = (RuntimeEntity) ast.V.visit(this, frame);
-    ast.offset = ast.V.offset + ((Field) ast.I.decl.entity).fieldOffset;
-                   // I.decl points to the appropriate record field
-    ast.indexed = ast.V.indexed;
+    
+    if(ast.V.type instanceof ClassTypeDenoter)
+    {
+    	//encodeFetchAddress(ast.V, frame);
+    	ObjectAddress address;
+    	/*if(baseObject instanceof KnownAddress) {
+    		address = ((KnownAddress)baseObject).address;
+    		ast.offset = ast.V.offset + 
+        			classRecords.get(
+        					((ClassTypeDenoter)ast.V.type).ClassName)
+        					.getOffset(ast.I.spelling);
+        	ast.indexed = ast.V.indexed;
+    	}
+    	else
+    	{
+    		address = ((UnknownAddress)baseObject).address;
+    		ast.offset = classRecords.get(
+					((ClassTypeDenoter)ast.V.type).ClassName)
+					.getOffset(ast.I.spelling);
+    	}*/
+    	//ast.offset = address.displacement + 
+    	ast.offset = //ast.V.offset + 
+    			classRecords.get(
+    					((ClassTypeDenoter)ast.V.type).ClassName)
+    					.getOffset(ast.I.spelling);
+    	ast.indexed = ast.V.indexed;
+    	
+    	//System.out.println("base class object at:" + address.displacement);
+    	//System.out.println("class " + ((ClassTypeDenoter)ast.V.type).ClassName + 
+    		//	" member " + ast.I.spelling + " address " + ast.offset);
+    }
+    else
+    {
+    	ast.offset = ast.V.offset + ((Field) ast.I.decl.entity).fieldOffset;
+        // I.decl points to the appropriate record field
+    	ast.indexed = ast.V.indexed;
+    }
+    
     return baseObject;
   }
 
   public Object visitSimpleVname(SimpleVname ast, Object o) {
+	  if(ast.type instanceof ClassTypeDenoter) {
+		  System.out.println("VISITSIMPLEVNAME CLASSTYPEDENOTER");
+		  System.out.println(ast.I.decl.entity.getClass());
+		  System.out.println(ast.I.spelling);
+		  try
+		  {
+		  UnknownAddress addr = (UnknownAddress)ast.I.decl.entity;
+		  System.out.println(addr.address.displacement);
+		  }catch (Exception ex){}
+		  if(ast.entity != null)
+			  System.out.println("ast.entity is a " + ast.entity.getClass());
+		  else 
+			  System.out.println("ast.entity is null");
+	  }
     ast.offset = 0;
     ast.indexed = false;
     return ast.I.decl.entity;
@@ -1089,6 +1178,9 @@ public final class Encoder implements Visitor {
    */
   private void encodeStore(Vname V, Frame frame, int valSize) {
 
+	  System.out.println("encodeStore V" + V.getClass());
+	  System.out.println("V.type " + V.type.getClass());
+	  
     RuntimeEntity baseObject = (RuntimeEntity) V.visit(this, frame);
     // If indexed = true, code will have been generated to load an index value.
     if (valSize > 255) {
@@ -1096,6 +1188,7 @@ public final class Encoder implements Visitor {
       valSize = 255; // to allow code generation to continue
     }
     if (baseObject instanceof KnownAddress) {
+    	System.out.println("baseObj is knownAddr");
       ObjectAddress address = ((KnownAddress) baseObject).address;
       if (V.indexed) {
         emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
@@ -1107,12 +1200,15 @@ public final class Encoder implements Visitor {
 	     address.level), address.displacement + V.offset);
       }
     } else if (baseObject instanceof UnknownAddress) {
+    	System.out.println("baseObj is uknownAddr");
       ObjectAddress address = ((UnknownAddress) baseObject).address;
       emit(Machine.LOADop, Machine.addressSize, displayRegister(frame.level,
            address.level), address.displacement);
+      
       if (V.indexed)
         emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
       if (V.offset != 0) {
+    	  System.out.println("V.offset is not 0");
         emit(Machine.LOADLop, 0, 0, V.offset);
         emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
       }
@@ -1132,7 +1228,7 @@ public final class Encoder implements Visitor {
    * and push it on to the stack.
    * @param V
    * @param frame
-   * @param valSize the size of the constant or variable's value
+   * @param valSize the size of the constant or variable's valuef
    */
   private void encodeFetch(Vname V, Frame frame, int valSize) {
 
@@ -1186,17 +1282,24 @@ public final class Encoder implements Visitor {
    * @param frame
    */
   private void encodeFetchAddress (Vname V, Frame frame) {
+	  
+	  System.out.println("encodeFetchAddress Vname class: " + V.getClass() + 
+			  " type class " + V.type.getClass());
 
+	  
+	  
     RuntimeEntity baseObject = (RuntimeEntity) V.visit(this, frame);
     // If indexed = true, code will have been generated to load an index value.
     if (baseObject instanceof KnownAddress) {
       ObjectAddress address = ((KnownAddress) baseObject).address;
+      System.out.println("known address disp: "  + address.displacement + " offset " + V.offset);
       emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
            address.displacement + V.offset);
       if (V.indexed)
         emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
     } else if (baseObject instanceof UnknownAddress) {
       ObjectAddress address = ((UnknownAddress) baseObject).address;
+      System.out.println("unknown address disp: "  + address.displacement + " offset " + V.offset);
       emit(Machine.LOADop, Machine.addressSize,displayRegister(frame.level,
            address.level), address.displacement);
       if (V.indexed)
@@ -1205,6 +1308,8 @@ public final class Encoder implements Visitor {
         emit(Machine.LOADLop, 0, 0, V.offset);
         emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
       }
+    } else {
+    	System.out.println("encodeFetchAddress ERROR");
     }
   }
 
@@ -1219,20 +1324,97 @@ public final class Encoder implements Visitor {
   // METHODS
   /////////////////////////////////////////////////////////////////////
   
+  
+/*  public Object visitCallExpression(CallExpression ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
+  Frame frame = (Frame) o;
+  // size of what will be left on stack
+  Integer valSize = (Integer) ast.type.visit(this, null);
+  // size of arguments below current stack pointer
+  Integer argsSize = (Integer) ast.APS.visit(this, frame);
+  
+  ast.I.visit(this, new Frame(frame.level, argsSize));
+  return valSize;
+}*/
+  /*
+   *   public Object visitCallCommand(CallCommand ast, Object o) {
+    Frame frame = (Frame) o;
+    Integer argsSize = (Integer) ast.APS.visit(this, frame);
+    ast.I.visit(this, new Frame(frame.level, argsSize));
+    return null;
+  }
+   * (non-Javadoc)
+   * @see Triangle.AbstractSyntaxTrees.Visitor#visitMethodCallCommand(Triangle.AbstractSyntaxTrees.Commands.MethodCallCommand, java.lang.Object)
+   */
+  
+  /*
+   *   public Object visitIdentifier(Identifier ast, Object o) {
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
+    Frame frame = (Frame) o;
+    if (ast.decl.entity instanceof KnownRoutine) {
+      ObjectAddress address = ((KnownRoutine) ast.decl.entity).address;
+      emit(Machine.CALLop, displayRegister(frame.level, address.level),
+	   Machine.CBr, address.displacement);
+    } else if (ast.decl.entity instanceof UnknownRoutine) {
+      ObjectAddress address = ((UnknownRoutine) ast.decl.entity).address;
+      emit(Machine.LOADop, Machine.closureSize, displayRegister(frame.level,
+           address.level), address.displacement);
+      emit(Machine.CALLIop, 0, 0, 0);
+    }
+    return null;
+  }
+   * (non-Javadoc)
+   * @see Triangle.AbstractSyntaxTrees.Visitor#visitMethodCallCommand(Triangle.AbstractSyntaxTrees.Commands.MethodCallCommand, java.lang.Object)
+   */
+  
   // TODO: These should generate code to push correct arguments onto the stack
   //       Also need to find Address of the func/proc so we know where to jump to
   
   @Override // This is a PROC
   public Object visitMethodCallCommand(MethodCallCommand ast, Object o) {
+	  System.out.println("visitMethodCallCommand");
 	  ////////CLASS DEFINITION GUARD /////////
 	  if(this.inClassDefinition) return 0;
 	  /////  END CLASS DEFINITION GUARD //////
 	  
-	  
-	  
 	  // TODO Auto-generated method stub
+	  Frame f = (Frame) o;
+	  Integer argsSize = (Integer) ast.M.A.visit(this, f);
+	  System.out.println("argsize: " + argsSize);
+	  Frame frame = new Frame(f.level, argsSize);
+	  
+	  String className = ((ClassTypeDenoter)ast.M.V.type).ClassName;
+	  String methodName = ast.M.I.spelling;
+	  System.out.println("class " + className + " calling " + methodName);
+	  
+	  RuntimeEntity entity = classRecords.get(className).getMethodAddress(methodName);
+	  
+	  ObjectAddress address = ((KnownRoutine) entity).address;
+      emit(Machine.CALLop, displayRegister(frame.level, address.level), 
+    		  Machine.CBr, address.displacement);
+	  
 	  return null;
   }
+  
+  /*
+   * 
+////////CLASS DEFINITION GUARD /////////
+	  if(this.inClassDefinition) return 0;
+	/////  END CLASS DEFINITION GUARD //////
+    Frame frame = (Frame) o;
+    // size of what will be left on stack
+    Integer valSize = (Integer) ast.type.visit(this, null);
+    // size of arguments below current stack pointer
+    Integer argsSize = (Integer) ast.APS.visit(this, frame);
+    
+    ast.I.visit(this, new Frame(frame.level, argsSize));
+    return valSize;
+   * 
+   * */
 
   @Override // This is a FUNC
   public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
@@ -1240,20 +1422,39 @@ public final class Encoder implements Visitor {
 	  if(this.inClassDefinition) return 0;
 	  /////  END CLASS DEFINITION GUARD //////
 	  
-	  
-	  
 	  // TODO Auto-generated method stub
-	  return null;
+	  
+	  Frame f = (Frame) o;
+	  Integer valSize = (Integer) ast.type.visit(this, null);
+	  Integer argsSize = (Integer) ast.M.A.visit(this, f);
+	  Frame frame = new Frame(f.level, argsSize);
+	  
+	  String className = ((ClassTypeDenoter)ast.M.V.type).ClassName;
+	  String methodName = ast.M.I.spelling;
+	  System.out.println("class " + className + " calling " + methodName);
+	  
+	  RuntimeEntity entity = classRecords.get(className).getMethodAddress(methodName);
+	  
+	  ObjectAddress address = ((KnownRoutine) entity).address;
+      emit(Machine.CALLop, displayRegister(frame.level, address.level), 
+    		  Machine.CBr, address.displacement);
+	  
+	  return valSize;
   }
   
+  /*
+   * Method Call V-Names are inside methodcallexpressions and methodcallcommands
+   * (non-Javadoc)
+   * @see Triangle.AbstractSyntaxTrees.Visitor#visitMethodCallVname(Triangle.AbstractSyntaxTrees.Vname.MethodCallVname, java.lang.Object)
+   */
   @Override
   public Object visitMethodCallVname(MethodCallVname ast, Object o) {
 	  ////////CLASS DEFINITION GUARD /////////
 	  if(this.inClassDefinition) return 0;
 	  /////  END CLASS DEFINITION GUARD //////
-	  
-	  
-	  
+	  //************((ClassTypeDenoter)ast.V.type).ClassName // figure out what classs it is
+	  //************ast.I.spelling // Name of the method
+	  System.out.println("UNIMPLEMENTED METHOD visitMethodCallVname in Encoder");
 	  // TODO Auto-generated method stub
 	  return null;
   }
@@ -1267,7 +1468,22 @@ public final class Encoder implements Visitor {
    */
   @Override
   public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-	  // TODO Auto-generated method stub
-	  return null;
+	  /*System.out.println("visiting " + ast.ClassName + " type denoter");
+	  int typeSize;
+	  
+	  if(ast.entity == null) {
+		  System.out.println("ast.entity is null");
+		  typeSize = ((Integer) classRecords.get(ast.ClassName).size());
+		  ast.entity = new TypeRepresentation(typeSize);
+		  writeTableDetails(ast);
+		  
+	  } else {
+		  System.out.println("ast.entity not null");
+		  typeSize = ast.entity.size;
+		  
+	  }
+	  
+	  System.out.println("returning " + new Integer(typeSize));*/
+	  return new Integer(Machine.addressSize);
   }
 }

@@ -1,7 +1,9 @@
 package Triangle.CodeGenerator;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Stores all meta-data about a Class needed todo code generation.
@@ -14,9 +16,11 @@ import java.util.Map;
  */
 public final class ClassRecord {
 	// Map member names to their offset in the stack dynamic blocks
-	private final Map<String, Integer> _map = new HashMap<String, Integer>();
+	private final Map<String, Integer> _members = new HashMap<String, Integer>();
+	// Map member names to their offset in the stack dynamic blocks
+	private final Set<String> _methods = new HashSet<String>();
 	// Jump locations for methods
-	private final Map<String, Integer> _jumpAdresses = new HashMap<String, Integer>();
+	private final Map<String, RuntimeEntity> _jumpAdresses = new HashMap<String, RuntimeEntity>();
 	// Keep track of offset
 	private int _offset = 0;
 	
@@ -24,22 +28,26 @@ public final class ClassRecord {
 	}
 	
 	public void addMember(String name) {
-		_map.put(name, _offset++);
+		_members.put(name, _offset++);
+	}
+	
+	public void addMethod(String method) {
+		_methods.add(method);
 	}
 	
 	public int getOffset(String name) {
-		return _map.get(name);
+		return _members.get(name);
 	}
 	
 	public int size() {
 		return _offset;
 	}
 	
-	public void addMethodAddress(String method, Integer address) {
-		_jumpAdresses.put(method, address);
+	public void addMethodAddress(String method, RuntimeEntity entity) {
+		_jumpAdresses.put(method, entity);
 	}
 	
-	public int getMethodAddress(String method) {
+	public RuntimeEntity getMethodAddress(String method) {
 		return _jumpAdresses.get(method);
 	}
 }

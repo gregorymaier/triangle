@@ -65,7 +65,7 @@ public class Compiler {
                            "Triangle Compiler (Java Version 2.1)" +
                            " **********");
 
-        System.out.println("Syntactic Analysis ...");
+        System.out.println("Syntactic Analysis ..");
         SourceFile source = new SourceFile(sourceName);
 
         if (source == null) {
@@ -90,11 +90,11 @@ public class Compiler {
             checker.check(theAST);				// 2nd pass
             /*if (showingAST) {
                 drawer.draw(theAST);
-            }
+            }*/
             if (reporter.numErrors == 0) {
                 System.out.println("Code Generation ...");
-                encoder.encodeRun(theAST, showingTable);	// 3rd pass
-            }*/
+                encoder.encodeRun(theAST, true);	// 3rd pass
+            }
         }
 
 	boolean successful = (reporter.numErrors == 0);

@@ -808,7 +808,7 @@ public class Parser {
         declarationAST = new ProcDeclaration(iAST, fpsAST, cAST, declarationPos);
         
         if(addMember) {
-        	newClassRecord.addMember(iAST.spelling);
+        	newClassRecord.addMethod(iAST.spelling);
         	inClass = true;
         }
       }
@@ -839,7 +839,7 @@ public class Parser {
           declarationPos);
         
         if(addMember) {
-        	newClassRecord.addMember(iAST.spelling);
+        	newClassRecord.addMethod(iAST.spelling);
         	inClass = true;
         }
       }
@@ -1068,7 +1068,7 @@ public class Parser {
       break;
        */
       if(inMethodCall) {
-    	  // Put in the Reference
+    	  // Put in the Reference 
     	  actualsAST = new SingleActualParameterSequence(new VarActualParameter(this.methodVName, actualsPos), actualsPos);
       } else {
     	  actualsAST = new EmptyActualParameterSequence(actualsPos);
