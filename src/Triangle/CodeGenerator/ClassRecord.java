@@ -27,8 +27,9 @@ public final class ClassRecord {
 	public ClassRecord() {
 	}
 	
-	public void addMember(String name) {
-		_members.put(name, _offset++);
+	public void addMember(String name, int size) {
+		_members.put(name, _offset);
+		_offset += size;
 	}
 	
 	public void addMethod(String method) {

@@ -85,10 +85,11 @@ public class Compiler2 {
     // scanner.enableDebugging();
     theAST = parser.parseProgram();    // 1st pass
     if (reporter.numErrors == 0) {
-      //if (showingAST) {
-      //    drawer.draw(theAST);
-      //}
-      System.out.println ("Contextual Analysis ...");
+      if (showingAST) {
+    	  System.out.println("drawTree");
+          drawer.draw(theAST);
+      }
+      System.out.println ("Context Analysis ...");
       checker.check(theAST);    // 2nd pass
       if (showingAST) {
         drawer.draw(theAST);

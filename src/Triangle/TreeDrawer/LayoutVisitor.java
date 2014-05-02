@@ -369,7 +369,7 @@ public class LayoutVisitor implements Visitor {
 
   // Programs
   public Object visitProgram(Program ast, Object obj) {
-    return layoutUnary("Program", ast.C);
+	  return layoutBinary("Program", ast.Cl, ast.C);
   }
 
   private DrawingTree layoutCaption (String name) {
@@ -552,45 +552,38 @@ public class LayoutVisitor implements Visitor {
 
 @Override
 public Object visitClassDeclaration(ClassDeclaration ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
+	return layoutBinary("ClassDeclaration", ast.CI, ast.D);
 }
 
 @Override
 public Object visitClassIdentifier(ClassIdentifier ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
+	return layoutNullary(ast.spelling);
 }
 
 @Override
 public Object visitSequentialClassDeclaration(SequentialClassDeclaration ast,
 		Object o) {
-	// TODO Auto-generated method stub
-	return null;
+	return layoutBinary("SequentialClassDeclaration", ast.C1, ast.C2);
 }
 
 @Override
 public Object visitMethodCallCommand(MethodCallCommand ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
+	return layoutUnary("MethodCallCommand", ast.M);
 }
 
 @Override
 public Object visitMethodCallVname(MethodCallVname ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
+	return layoutTernary("MethodCallVname", ast.V, ast.I, ast.A);
 }
 
 @Override
 public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
+	return layoutUnary("MethodCallExpression", ast.M);
 }
 
 @Override
 public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-	// TODO Auto-generated method stub
-	return null;
+	return layoutNullary(ast.ClassName);
 }
 
 }

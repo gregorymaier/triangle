@@ -104,8 +104,6 @@ public final class Encoder implements Visitor {
 
   // Commands
   public Object visitAssignCommand(AssignCommand ast, Object o) {
-	  System.out.println("visitAssignCommand");
-	  System.out.println(ast.V.getClass());
     Frame frame = (Frame) o;
     Integer valSize = (Integer) ast.E.visit(this, frame);
     encodeStore(ast.V, new Frame (frame, valSize.intValue()),
@@ -293,12 +291,6 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitVnameExpression(VnameExpression ast, Object o) {
-	  System.out.println("visitVnameExpression");
-	  if(ast.type instanceof ClassTypeDenoter)
-	  {
-		  System.out.println("CLASS INSTANCE IN VISITVNAMEEXPRESSION");
-		 
-	  }
 ////////CLASS DEFINITION GUARD /////////
 	  if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
@@ -373,7 +365,6 @@ public final class Encoder implements Visitor {
     
     ////////CLASS DEFINITION GUARD /////////
     if(turnGuardBackOn) {
-    	System.out.println("function " + ast.I.spelling + " is at address " + jumpAddr);
     	this.inClassDefinition = true;
     	classRecords
     	.get(className)
@@ -391,9 +382,6 @@ public final class Encoder implements Visitor {
 	  boolean turnGuardBackOn = this.inClassDefinition;
 	  this.inClassDefinition = false;
 	  /////  END CLASS DEFINITION GUARD //////
-	  
-	  
-	  System.out.println("visitProcDeclaration");
     Frame frame = (Frame) o;
     int jumpAddr = nextInstrAddr;
     int argsSize = 0;
@@ -412,22 +400,18 @@ public final class Encoder implements Visitor {
       Frame frame2 = new Frame(frame.level + 1, Machine.linkDataSize);
       ast.C.visit(this, frame2);
     }
-    System.out.println("argsize in proc dec: " + argsSize);
     emit(Machine.RETURNop, 0, 0, argsSize);
     patch(jumpAddr, nextInstrAddr);
     
     
 ////////CLASS DEFINITION GUARD /////////
 if(turnGuardBackOn) {
-System.out.println("function " + ast.I.spelling + " is at address " + jumpAddr);
 this.inClassDefinition = true;
 classRecords
 .get(className)
 .addMethodAddress(ast.I.spelling, ast.entity);
 }
 /////  END CLASS DEFINITION GUARD //////
-    
-System.out.println("nextInstrAddr:" + nextInstrAddr);
     
     return new Integer(0);
   }
@@ -468,7 +452,7 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
   
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {
 	  ////////CLASS DEFINITION GUARD /////////
-	  if(this.inClassDefinition) return 0;
+	  
 	/////  END CLASS DEFINITION GUARD //////
 	  
     Frame frame = (Frame) o;
@@ -478,12 +462,17 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
     
     if(ast.T instanceof ClassTypeDenoter)
     {
-    	System.out.println("vardeclaration is class");
     	extraSize = classRecords.get(((ClassTypeDenoter)ast.T).ClassName).size();
-    	System.out.println("Pushing " + extraSize + " words for " + ((ClassTypeDenoter)ast.T).ClassName + " Object");
-    	System.out.println("address = " + frame.size);
     	
     }
+    
+    if(this.inClassDefinition) 
+	  {
+		  classRecords
+	    	.get(className)
+	    	.addMember(ast.I.spelling, extraSize);
+		  return 0;
+	  }
     
     emit(Machine.PUSHop, 0, 0, extraSize);
     ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
@@ -502,6 +491,9 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 	  
     Frame frame = (Frame) o;
     int elemSize = ((Integer) ast.E.visit(this, frame)).intValue();
+    if(ast.E.type instanceof ClassTypeDenoter)
+    	elemSize = classRecords.get(((ClassTypeDenoter)ast.E.type).ClassName).size();
+    
     Frame frame1 = new Frame(frame, elemSize);
     int arraySize = ((Integer) ast.AA.visit(this, frame1)).intValue();
     return new Integer(elemSize + arraySize);
@@ -511,7 +503,8 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 	////////CLASS DEFINITION GUARD /////////
 	if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
-	  
+	if(ast.E.type instanceof ClassTypeDenoter)
+		  return classRecords.get(((ClassTypeDenoter)ast.E.type).ClassName).size();
     return ast.E.visit(this, o);
   }
 
@@ -527,6 +520,9 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     int fieldSize = ((Integer) ast.E.visit(this, frame)).intValue();
+    if(ast.E.type instanceof ClassTypeDenoter)
+    	fieldSize = classRecords.get(((ClassTypeDenoter)ast.E.type).ClassName).size();
+    
     Frame frame1 = new Frame (frame, fieldSize);
     int recordSize = ((Integer) ast.RA.visit(this, frame1)).intValue();
     return new Integer(fieldSize + recordSize);
@@ -534,6 +530,9 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 
   public Object visitSingleRecordAggregate(SingleRecordAggregate ast,
 					   Object o) {
+	  if(ast.E.type instanceof ClassTypeDenoter)
+		  return classRecords.get(((ClassTypeDenoter)ast.E.type).ClassName).size();
+	  
     return ast.E.visit(this, o);
   }
 
@@ -568,10 +567,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 
   //TODO:
   public Object visitVarFormalParameter(VarFormalParameter ast, Object o) {
-	  System.out.println("visitVarFormalParameter");
-	  if(ast.T instanceof ClassTypeDenoter) {
-		  System.out.println("var formal parameter is class object");
-	  }
     Frame frame = (Frame) o;
     ast.T.visit(this, null);
     ast.entity = new UnknownAddress (Machine.addressSize, frame.level,
@@ -603,10 +598,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 
   // Actual Parameters
   public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
-	  System.out.println("visitConstActualParameter");
-	  if(ast.E.type instanceof ClassTypeDenoter) {
-		  System.out.println("const actual parameter is class object");
-	  }
 ////////CLASS DEFINITION GUARD /////////
 	  if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
@@ -656,7 +647,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
   
   //TODO: here ast.V is 
   public Object visitVarActualParameter(VarActualParameter ast, Object o) {
-	  System.out.println("visit var actual param");
     encodeFetchAddress(ast.V, (Frame) o);
     return new Integer(Machine.addressSize);
   }
@@ -685,7 +675,7 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
   // Type Denoters
   public Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o) {
 ////////CLASS DEFINITION GUARD /////////
-	  if(this.inClassDefinition) return 0;
+	 // if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
     return new Integer(0);
   }
@@ -693,12 +683,21 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
   public Object visitArrayTypeDenoter(ArrayTypeDenoter ast, Object o) {
     int typeSize;
     if (ast.entity == null) {
-      int elemSize = ((Integer) ast.T.visit(this, null)).intValue();
+      int elemSize;
+      
+      if(!(ast.T instanceof ClassTypeDenoter))
+    	  elemSize = ((Integer) ast.T.visit(this, null)).intValue();
+      else
+      {
+    	  elemSize = classRecords.get(((ClassTypeDenoter)ast.T).ClassName).size();
+      }
+      
       typeSize = Integer.parseInt(ast.IL.spelling) * elemSize;
       ast.entity = new TypeRepresentation(typeSize);
       writeTableDetails(ast);
     } else
       typeSize = ast.entity.size;
+    //System.out.println("array is size:" + typeSize);
     return new Integer(typeSize);
   }
 
@@ -728,7 +727,7 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
   public Object visitSimpleTypeDenoter(SimpleTypeDenoter ast,
 					   Object o) {
 ////////CLASS DEFINITION GUARD /////////
-	  if(this.inClassDefinition) return 0;
+	  //if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
     return new Integer(0);
   }
@@ -743,10 +742,11 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 
   public Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object o) {
 ////////CLASS DEFINITION GUARD /////////
-	  if(this.inClassDefinition) return 0;
+	  //if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
     int typeSize;
     if (ast.entity == null) {
+    	
       typeSize = ((Integer) ast.FT.visit(this, new Integer(0))).intValue();
       ast.entity = new TypeRepresentation(typeSize);
       writeTableDetails(ast);
@@ -852,46 +852,24 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
     return null;
   }
 
-  //TODO:**********************
-  //TODO: If the Variable is a class we need to make sure the offset is
-  //      correct offset from base of class on stack
+  
   // Value-or-variable names
   public Object visitDotVname(DotVname ast, Object o) {
-////////CLASS DEFINITION GUARD /////////
-	  if(this.inClassDefinition) return 0;
+	////////CLASS DEFINITION GUARD /////////
+	if(this.inClassDefinition) return 0;
 	/////  END CLASS DEFINITION GUARD //////
     Frame frame = (Frame) o;
     RuntimeEntity baseObject = (RuntimeEntity) ast.V.visit(this, frame);
     
     if(ast.V.type instanceof ClassTypeDenoter)
     {
-    	//encodeFetchAddress(ast.V, frame);
+    	//System.out.println("ast.V.offset " + ast.V.offset);
     	ObjectAddress address;
-    	/*if(baseObject instanceof KnownAddress) {
-    		address = ((KnownAddress)baseObject).address;
-    		ast.offset = ast.V.offset + 
-        			classRecords.get(
-        					((ClassTypeDenoter)ast.V.type).ClassName)
-        					.getOffset(ast.I.spelling);
-        	ast.indexed = ast.V.indexed;
-    	}
-    	else
-    	{
-    		address = ((UnknownAddress)baseObject).address;
-    		ast.offset = classRecords.get(
-					((ClassTypeDenoter)ast.V.type).ClassName)
-					.getOffset(ast.I.spelling);
-    	}*/
-    	//ast.offset = address.displacement + 
-    	ast.offset = //ast.V.offset + 
+    	ast.offset = ast.V.offset + 
     			classRecords.get(
     					((ClassTypeDenoter)ast.V.type).ClassName)
     					.getOffset(ast.I.spelling);
     	ast.indexed = ast.V.indexed;
-    	
-    	//System.out.println("base class object at:" + address.displacement);
-    	//System.out.println("class " + ((ClassTypeDenoter)ast.V.type).ClassName + 
-    		//	" member " + ast.I.spelling + " address " + ast.offset);
     }
     else
     {
@@ -904,20 +882,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
   }
 
   public Object visitSimpleVname(SimpleVname ast, Object o) {
-	  if(ast.type instanceof ClassTypeDenoter) {
-		  System.out.println("VISITSIMPLEVNAME CLASSTYPEDENOTER");
-		  System.out.println(ast.I.decl.entity.getClass());
-		  System.out.println(ast.I.spelling);
-		  try
-		  {
-		  UnknownAddress addr = (UnknownAddress)ast.I.decl.entity;
-		  System.out.println(addr.address.displacement);
-		  }catch (Exception ex){}
-		  if(ast.entity != null)
-			  System.out.println("ast.entity is a " + ast.entity.getClass());
-		  else 
-			  System.out.println("ast.entity is null");
-	  }
     ast.offset = 0;
     ast.indexed = false;
     return ast.I.decl.entity;
@@ -931,10 +895,18 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
     baseObject = (RuntimeEntity) ast.V.visit(this, frame);
     ast.offset = ast.V.offset;
     ast.indexed = ast.V.indexed;
-    elemSize = ((Integer) ast.type.visit(this, null)).intValue();
+    if(ast.type instanceof ClassTypeDenoter) {
+    	elemSize = classRecords
+    			   .get(((ClassTypeDenoter)ast.type).ClassName)
+    			   .size();
+    	//System.out.println("subV elemSize " + elemSize);
+    } else {
+    	elemSize = ((Integer) ast.type.visit(this, null)).intValue();
+    }
     if (ast.E instanceof IntegerExpression) {
       IntegerLiteral IL = ((IntegerExpression) ast.E).IL;
       ast.offset = ast.offset + Integer.parseInt(IL.spelling) * elemSize;
+      //System.out.println("ast.off " + ast.offset);
     } else {
       // v-name is indexed by a proper expression, not a literal
       if (ast.indexed)
@@ -1177,9 +1149,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
    * @param valSize the size of the constant or variable's value.
    */
   private void encodeStore(Vname V, Frame frame, int valSize) {
-
-	  System.out.println("encodeStore V" + V.getClass());
-	  System.out.println("V.type " + V.type.getClass());
 	  
     RuntimeEntity baseObject = (RuntimeEntity) V.visit(this, frame);
     // If indexed = true, code will have been generated to load an index value.
@@ -1188,7 +1157,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
       valSize = 255; // to allow code generation to continue
     }
     if (baseObject instanceof KnownAddress) {
-    	System.out.println("baseObj is knownAddr");
       ObjectAddress address = ((KnownAddress) baseObject).address;
       if (V.indexed) {
         emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
@@ -1200,7 +1168,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 	     address.level), address.displacement + V.offset);
       }
     } else if (baseObject instanceof UnknownAddress) {
-    	System.out.println("baseObj is uknownAddr");
       ObjectAddress address = ((UnknownAddress) baseObject).address;
       emit(Machine.LOADop, Machine.addressSize, displayRegister(frame.level,
            address.level), address.displacement);
@@ -1208,7 +1175,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
       if (V.indexed)
         emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
       if (V.offset != 0) {
-    	  System.out.println("V.offset is not 0");
         emit(Machine.LOADLop, 0, 0, V.offset);
         emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
       }
@@ -1282,24 +1248,16 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
    * @param frame
    */
   private void encodeFetchAddress (Vname V, Frame frame) {
-	  
-	  System.out.println("encodeFetchAddress Vname class: " + V.getClass() + 
-			  " type class " + V.type.getClass());
-
-	  
-	  
     RuntimeEntity baseObject = (RuntimeEntity) V.visit(this, frame);
     // If indexed = true, code will have been generated to load an index value.
     if (baseObject instanceof KnownAddress) {
       ObjectAddress address = ((KnownAddress) baseObject).address;
-      System.out.println("known address disp: "  + address.displacement + " offset " + V.offset);
       emit(Machine.LOADAop, 0, displayRegister(frame.level, address.level),
            address.displacement + V.offset);
       if (V.indexed)
         emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
     } else if (baseObject instanceof UnknownAddress) {
       ObjectAddress address = ((UnknownAddress) baseObject).address;
-      System.out.println("unknown address disp: "  + address.displacement + " offset " + V.offset);
       emit(Machine.LOADop, Machine.addressSize,displayRegister(frame.level,
            address.level), address.displacement);
       if (V.indexed)
@@ -1324,59 +1282,8 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
   // METHODS
   /////////////////////////////////////////////////////////////////////
   
-  
-/*  public Object visitCallExpression(CallExpression ast, Object o) {
-////////CLASS DEFINITION GUARD /////////
-	  if(this.inClassDefinition) return 0;
-	/////  END CLASS DEFINITION GUARD //////
-  Frame frame = (Frame) o;
-  // size of what will be left on stack
-  Integer valSize = (Integer) ast.type.visit(this, null);
-  // size of arguments below current stack pointer
-  Integer argsSize = (Integer) ast.APS.visit(this, frame);
-  
-  ast.I.visit(this, new Frame(frame.level, argsSize));
-  return valSize;
-}*/
-  /*
-   *   public Object visitCallCommand(CallCommand ast, Object o) {
-    Frame frame = (Frame) o;
-    Integer argsSize = (Integer) ast.APS.visit(this, frame);
-    ast.I.visit(this, new Frame(frame.level, argsSize));
-    return null;
-  }
-   * (non-Javadoc)
-   * @see Triangle.AbstractSyntaxTrees.Visitor#visitMethodCallCommand(Triangle.AbstractSyntaxTrees.Commands.MethodCallCommand, java.lang.Object)
-   */
-  
-  /*
-   *   public Object visitIdentifier(Identifier ast, Object o) {
-////////CLASS DEFINITION GUARD /////////
-	  if(this.inClassDefinition) return 0;
-	/////  END CLASS DEFINITION GUARD //////
-    Frame frame = (Frame) o;
-    if (ast.decl.entity instanceof KnownRoutine) {
-      ObjectAddress address = ((KnownRoutine) ast.decl.entity).address;
-      emit(Machine.CALLop, displayRegister(frame.level, address.level),
-	   Machine.CBr, address.displacement);
-    } else if (ast.decl.entity instanceof UnknownRoutine) {
-      ObjectAddress address = ((UnknownRoutine) ast.decl.entity).address;
-      emit(Machine.LOADop, Machine.closureSize, displayRegister(frame.level,
-           address.level), address.displacement);
-      emit(Machine.CALLIop, 0, 0, 0);
-    }
-    return null;
-  }
-   * (non-Javadoc)
-   * @see Triangle.AbstractSyntaxTrees.Visitor#visitMethodCallCommand(Triangle.AbstractSyntaxTrees.Commands.MethodCallCommand, java.lang.Object)
-   */
-  
-  // TODO: These should generate code to push correct arguments onto the stack
-  //       Also need to find Address of the func/proc so we know where to jump to
-  
   @Override // This is a PROC
   public Object visitMethodCallCommand(MethodCallCommand ast, Object o) {
-	  System.out.println("visitMethodCallCommand");
 	  ////////CLASS DEFINITION GUARD /////////
 	  if(this.inClassDefinition) return 0;
 	  /////  END CLASS DEFINITION GUARD //////
@@ -1384,12 +1291,10 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 	  // TODO Auto-generated method stub
 	  Frame f = (Frame) o;
 	  Integer argsSize = (Integer) ast.M.A.visit(this, f);
-	  System.out.println("argsize: " + argsSize);
 	  Frame frame = new Frame(f.level, argsSize);
 	  
 	  String className = ((ClassTypeDenoter)ast.M.V.type).ClassName;
 	  String methodName = ast.M.I.spelling;
-	  System.out.println("class " + className + " calling " + methodName);
 	  
 	  RuntimeEntity entity = classRecords.get(className).getMethodAddress(methodName);
 	  
@@ -1399,22 +1304,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 	  
 	  return null;
   }
-  
-  /*
-   * 
-////////CLASS DEFINITION GUARD /////////
-	  if(this.inClassDefinition) return 0;
-	/////  END CLASS DEFINITION GUARD //////
-    Frame frame = (Frame) o;
-    // size of what will be left on stack
-    Integer valSize = (Integer) ast.type.visit(this, null);
-    // size of arguments below current stack pointer
-    Integer argsSize = (Integer) ast.APS.visit(this, frame);
-    
-    ast.I.visit(this, new Frame(frame.level, argsSize));
-    return valSize;
-   * 
-   * */
 
   @Override // This is a FUNC
   public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
@@ -1431,7 +1320,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 	  
 	  String className = ((ClassTypeDenoter)ast.M.V.type).ClassName;
 	  String methodName = ast.M.I.spelling;
-	  System.out.println("class " + className + " calling " + methodName);
 	  
 	  RuntimeEntity entity = classRecords.get(className).getMethodAddress(methodName);
 	  
@@ -1441,19 +1329,10 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
 	  
 	  return valSize;
   }
-  
-  /*
-   * Method Call V-Names are inside methodcallexpressions and methodcallcommands
-   * (non-Javadoc)
-   * @see Triangle.AbstractSyntaxTrees.Visitor#visitMethodCallVname(Triangle.AbstractSyntaxTrees.Vname.MethodCallVname, java.lang.Object)
-   */
   @Override
   public Object visitMethodCallVname(MethodCallVname ast, Object o) {
 	  ////////CLASS DEFINITION GUARD /////////
 	  if(this.inClassDefinition) return 0;
-	  /////  END CLASS DEFINITION GUARD //////
-	  //************((ClassTypeDenoter)ast.V.type).ClassName // figure out what classs it is
-	  //************ast.I.spelling // Name of the method
 	  System.out.println("UNIMPLEMENTED METHOD visitMethodCallVname in Encoder");
 	  // TODO Auto-generated method stub
 	  return null;
@@ -1468,22 +1347,6 @@ System.out.println("nextInstrAddr:" + nextInstrAddr);
    */
   @Override
   public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-	  /*System.out.println("visiting " + ast.ClassName + " type denoter");
-	  int typeSize;
-	  
-	  if(ast.entity == null) {
-		  System.out.println("ast.entity is null");
-		  typeSize = ((Integer) classRecords.get(ast.ClassName).size());
-		  ast.entity = new TypeRepresentation(typeSize);
-		  writeTableDetails(ast);
-		  
-	  } else {
-		  System.out.println("ast.entity not null");
-		  typeSize = ast.entity.size;
-		  
-	  }
-	  
-	  System.out.println("returning " + new Integer(typeSize));*/
 	  return new Integer(Machine.addressSize);
   }
 }

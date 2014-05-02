@@ -779,7 +779,7 @@ public class Parser {
         declarationAST = new VarDeclaration(iAST, tAST, declarationPos);
         
         if(addMember) {
-        	newClassRecord.addMember(iAST.spelling);
+        	//newClassRecord.addMember(iAST.spelling);
         	inClass = true;
         }
       }
